@@ -457,7 +457,7 @@ class github_sync_form_ui extends e_admin_form_ui
 		
 					if (getperms('0'))   // only main admins
 					{
-						$text .= $this->submit_image('menu_delete['.$id.']', $id, 'delete', LAN_DELETE.' [ ID: '.$id.' ]', array('class' => 'action delete btn btn-default'));
+						$text .= $this->submit_image('etrigger_delete['.$id.']', $id, 'delete', LAN_DELETE.' [ ID: '.$id.' ]', array('class' => 'action delete btn btn-default'));
 					}
 
 					if(true)  //change to active
