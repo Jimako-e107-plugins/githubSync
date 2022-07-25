@@ -12,6 +12,8 @@ if (!getperms('P'))
 // e107::lan('githubSync',true);
 e107::coreLan('db', true);
 
+define("ADMIN_GITSYNC_ICON", e107::getParser()->toGlyph('fa-file-text-o', array( 'fw'=>1)));
+
 class githubSync_adminArea extends e_admin_dispatcher
 {
 
@@ -464,9 +466,9 @@ class github_sync_form_ui extends e_admin_form_ui
 						$query2['action'] = 'sync';
 						$query2['id'] = $id;
 						$query2 = http_build_query($query2, '', '&amp;');
-
+ 
 						$link = e_SELF."?{$query2}";
-						$text .= "<a href='".$link."' class='btn btn-default' title='Run Sync'>".ADMIN_PAGES_ICON."</a>";  //
+						$text .= "<a href='".$link."' class='btn btn-info' title='Run Sync'>".ADMIN_GITSYNC_ICON."</a>";  //
 					}
 
 					return $text;
