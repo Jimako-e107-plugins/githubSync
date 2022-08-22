@@ -96,7 +96,7 @@ class github_sync_ui extends e_admin_ui
 		'options'                 => array('title' => LAN_OPTIONS,  'type' => 'method',  'data' => null,  'width' => '10%',  'thclass' => 'center last',  'class' => 'center last',  'forced' => 'value',  'readParms' =>  array(),  'writeParms' =>  array(),),
 	);
 
-	protected $fieldpref = array('type', 'organization', 'repo', 'branch', 'lastsynced');
+	protected $fieldpref = array('type', 'organization', 'repo', 'branch', 'folder', 'lastsynced');
 
 
 	//	protected $preftabs        = array('General', 'Other' );
