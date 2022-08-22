@@ -13,16 +13,16 @@
 		<item>
 			<field name="id">2</field>
 			<field name="type">plugin</field>
-			<field name="organization">Jimako-e107-plugins</field>
-			<field name="repo">forum</field>
-			<field name="branch">main</field>
+			<field name="organization">e107Inc</field>
+			<field name="repo">e107</field>
+			<field name="branch">master</field>
 			<field name="lastsynced">0</field>
 		</item>
 		<item>
 			<field name="id">3</field>
 			<field name="type">plugin</field>
 			<field name="organization">Jimako-e107-plugins</field>
-			<field name="repo">forum</field>
+			<field name="repo">forum/field>
 			<field name="branch">main</field>
 			<field name="lastsynced">0</field>
 		</item>
