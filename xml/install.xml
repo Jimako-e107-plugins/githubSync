@@ -13,8 +13,8 @@
 		<item>
 			<field name="id">2</field>
 			<field name="type">plugin</field>
-			<field name="organization">Jimako-e107-plugins</field>
-			<field name="repo">easyshop</field>
+			<field name="organization">e107Inc</field>
+			<field name="repo">e107</field>
 			<field name="branch">master</field>
 			<field name="lastsynced">0</field>
 		</item>
@@ -22,26 +22,18 @@
 			<field name="id">3</field>
 			<field name="type">plugin</field>
 			<field name="organization">Jimako-e107-plugins</field>
-			<field name="repo">forum</field>
+			<field name="repo">download</field>
 			<field name="branch">main</field>
 			<field name="lastsynced">0</field>
-		</item>
+		</item>	
 		<item>
 			<field name="id">4</field>
 			<field name="type">plugin</field>
 			<field name="organization">Jimako-e107-plugins</field>
-			<field name="repo">forum</field>
-			<field name="branch">main</field>
-			<field name="lastsynced">0</field>
-		</item>
-		<item>
-			<field name="id">5</field>
-			<field name="type">core</field>
-			<field name="organization">e107Inc</field>
-			<field name="repo">e107</field>
+			<field name="repo">easyshop</field>
 			<field name="branch">master</field>
 			<field name="lastsynced">0</field>
-		</item>
+		</item>	
 	</dbTable>
 	</database>
 </e107Export>
