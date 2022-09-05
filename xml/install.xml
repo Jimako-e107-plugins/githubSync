@@ -9,6 +9,7 @@
 			<field name="repo">e107</field>
 			<field name="branch">master</field>
 			<field name="lastsynced">0</field>
+            <field name="note">PHP 8.2 + e107 2.3.3</field>
 		</item>
 		<item>
 			<field name="id">2</field>
@@ -17,6 +18,7 @@
 			<field name="repo">e107</field>
 			<field name="branch">master</field>
 			<field name="lastsynced">0</field>
+            <field name="note">CUSTOMIZED VERSION PHP 7.4 + e107 2.3.2</field>
 		</item>
 		<item>
 			<field name="id">3</field>
@@ -25,6 +27,7 @@
 			<field name="repo">forum</field>
 			<field name="branch">main</field>
 			<field name="lastsynced">0</field>
+            <field name="note">CUSTOMIZED VERSION PHP 7.4 + e107 2.3.2 + e107 hpkizi</field>
 		</item>
 		<item>
 			<field name="id">4</field>
@@ -33,6 +36,7 @@
 			<field name="repo">download</field>
 			<field name="branch">main</field>
 			<field name="lastsynced">0</field>
+            <field name="note">CUSTOMIZED VERSION PHP 7.4 + e107 2.3.2 + e107 hpkizi</field>
 		</item>	
 		<item>
 			<field name="id">5</field>
@@ -41,8 +45,58 @@
 			<field name="repo">easyshop</field>
 			<field name="branch">master</field>
 			<field name="lastsynced">0</field>
+            <field name="note">PHP 8.2 + e107 2.3.3</field>
 		</item>	
-
+        <item>
+            <field name="id">6</field>
+            <field name="type">plugin</field>
+            <field name="organization">Jimako-e107-plugins</field>
+            <field name="repo">githubSync</field>
+            <field name="branch">main</field>
+            <field name="lastsynced"></field>
+            <field name="folder">0</field>
+            <field name="note">admin_config.php has to be updated manually.</field>
+        </item>
+        <item>
+            <field name="id">8</field>
+            <field name="type">languagepack</field>
+            <field name="organization">e107translations</field>
+            <field name="repo">Slovak</field>
+            <field name="branch">master</field>
+            <field name="lastsynced"></field>
+            <field name="folder">0</field>
+            <field name="note"></field>
+        </item>
+        <item>
+            <field name="id">9</field>
+            <field name="type">languagepack</field>
+            <field name="organization">e107translations</field>
+            <field name="repo">Czech</field>
+            <field name="branch">master</field>
+            <field name="lastsynced"></field>
+            <field name="folder">0</field>
+            <field name="note"></field>
+        </item>
+        <item>
+            <field name="id">10</field>
+            <field name="type">plugin</field>
+            <field name="organization">Moc</field>
+            <field name="repo">cookbook</field>
+            <field name="branch">master</field>
+            <field name="lastsynced"></field>
+            <field name="folder"></field>
+            <field name="note">PHP 8.2 e107 2.3.3</field>
+        </item>
+        <item>
+            <field name="id">11</field>
+            <field name="type">plugin</field>
+            <field name="organization">Jimako-e107-plugins</field>
+            <field name="repo">survey-e107-v2</field>
+            <field name="branch">main</field>
+            <field name="lastsynced"></field>
+            <field name="folder">survey</field>
+            <field name="note">in development</field>
+        </item>
 	</dbTable>
 	</database>
 </e107Export>

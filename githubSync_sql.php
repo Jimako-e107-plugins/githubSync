@@ -6,5 +6,6 @@ CREATE TABLE `github_sync` (
 `branch` varchar(100) NOT NULL,
 `lastsynced` int(11) NOT NULL,
 `folder` varchar(50) NOT NULL,
+`note` text NOT NULL,
 UNIQUE KEY `id` (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;

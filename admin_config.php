@@ -65,7 +65,7 @@ class github_sync_ui extends e_admin_ui
 	//	protected $eventName		= 'githubSync-github_sync'; // remove comment to enable event triggers in admin. 		
 	protected $table			= 'github_sync';
 	protected $pid				= 'id';
-	protected $perPage			= 10;
+	protected $perPage			= 20;
 	protected $batchDelete		= true;
 	protected $batchExport     = true;
 	protected $batchCopy		= true;
@@ -93,10 +93,12 @@ class github_sync_ui extends e_admin_ui
 		'branch'                  => array('title' => 'Branch',  'type' => 'text',  'data' => 'safestr',  'width' => 'auto',  'filter' => 'value',  'help' => '',  'readParms' =>  array(),  'writeParms' =>  array(),  'class' => 'left',  'thclass' => 'left',),
 		'folder'                  => array('title' => 'Folder',  'type' => 'text',  'data' => 'safestr',  'width' => 'auto',  'filter' => 'value',  'help' => 'Folder name if different than repo name',  'readParms' =>  array(),  'writeParms' =>  array(),  'class' => 'left',  'thclass' => 'left',),
 		'lastsynced'             => array('title' => 'Last Synced',  'type' => 'datestamp',  'writeParms' => 'type=datetime', 'readonly' => true, 'noedit' => true,  'data' => 'int',   'readParms' =>  array(),   'class' => 'left',  'thclass' => 'left',),
+		'note'             => array('title' => 'Note',  'type' => 'textarea',   'data' => 'str',   'readParms' =>  array(),   'class' => 'left',  'thclass' => 'left',),
+
 		'options'                 => array('title' => LAN_OPTIONS,  'type' => 'method',  'data' => null,  'width' => '10%',  'thclass' => 'center last',  'class' => 'center last',  'forced' => 'value',  'readParms' =>  array(),  'writeParms' =>  array(),),
 	);
 
-	protected $fieldpref = array('type', 'organization', 'repo', 'branch', 'folder', 'lastsynced');
+	protected $fieldpref = array('type', 'organization', 'repo', 'branch', 'folder', 'note', 'lastsynced');
 
 
 	//	protected $preftabs        = array('General', 'Other' );
@@ -120,6 +122,22 @@ class github_sync_ui extends e_admin_ui
 			$this->sync_type = $data['type'];
 			$this->sync_id = $id;
 			$this->sync_folder = !empty($data['folder']) ? $data['folder'] : $this->sync_repo;
+
+			if($this->sync_type == "core") {
+				$this->sync_folder =  $this->sync_repo;
+			}
+			if ($this->sync_type == "themepack")
+			{
+				$this->sync_folder =  $this->sync_repo;
+			}
+			if ($this->sync_type == "pluginspack")
+			{
+				$this->sync_folder =  $this->sync_repo;
+			}
+			if ($this->sync_type == "languagepack")
+			{
+				$this->sync_folder =  $this->sync_repo;
+			}
 		}
 	}
 
@@ -132,7 +150,14 @@ class github_sync_ui extends e_admin_ui
 		}
 
 		// Set drop-down values (if any). 
-		$this->fields['type']['writeParms']['optArray'] = array('core' => 'core', 'plugin' => 'plugin', 'theme' => 'theme'); // Example Drop-down array. 
+		$this->fields['type']['writeParms']['optArray'] = array(
+			'core' => 'core', 
+			'plugin' => 'plugin', 
+			'theme' => 'theme', 
+			'themepack' => 'Theme + plugins - 2 folders',
+			'pluginspack' => 'More plugins in one repo in e107_plugins folder',
+			'languagepack' => 'Language pack - 3 folders',
+		); // Example Drop-down array. 
 
 	}
 
@@ -213,6 +238,7 @@ class github_sync_ui extends e_admin_ui
 		$remotefile = "https://codeload.github.com/{$organization}/{$repo}/zip/{$branch}";
 		$note = 'You are syncing with repo: <b>' . $remotefile;
 		$note .= '</b><br>You can put this URL to the browser and download the file manually. If you click on the button below, you will overwrite existing files.';
+		$note .= '</b><br>If there are ignored files, run sync second time - it happens if new folders are created at first.';
 
 		e107::getMessage()->addWarning($note);
 
@@ -292,12 +318,13 @@ class github_sync_ui extends e_admin_ui
 
 	public function unzipGithubArchive($url = 'plugin', $destination_path = e_BASE)
 	{
-
+		
 		$organization = $this->sync_organization;
 		$repo = $this->sync_repo;
 		$branch = $this->sync_branch;
 		$folder = $this->sync_folder;
 
+		$newFolders = array();
 
 		if ($this->sync_type == 'plugin')
 		{
@@ -309,7 +336,7 @@ class github_sync_ui extends e_admin_ui
 				"{$repo}-{$branch}" => $destination_path . "{$folder}",
 			];
 		}
-		if ($this->sync_type == 'theme')
+		elseif ($this->sync_type == 'theme')
 		{
 			$destination_path = $destination_path . e107::getFolder('THEMES');
 
@@ -324,9 +351,26 @@ class github_sync_ui extends e_admin_ui
 			$localfile = "{$folder}-{$branch}.zip";
 			$destination_path = e_BASE;
 		}
-
+		elseif ($this->sync_type == 'themepack')
+		{
+			$localfile = "{$folder}-{$branch}.zip";
+			$destination_path = e_BASE;
+		}
+		elseif ($this->sync_type == 'pluginspack')
+		{
+			$localfile = "{$folder}-{$branch}.zip";
+			$destination_path = e_BASE;
+		}
+		elseif ($this->sync_type == 'languagepack')
+		{
+			$localfile = "{$folder}-{$branch}.zip";
+			$destination_path = e_BASE;
+		}
+		else return false;
+ 
 
 		$remotefile = "https://codeload.github.com/{$organization}/{$repo}/zip/{$branch}";
+
 		$excludes = [
 			"{$repo}-{$branch}/.codeclimate.yml",
 			"{$repo}-{$branch}/.editorconfig",
@@ -352,7 +396,6 @@ class github_sync_ui extends e_admin_ui
 			unlink(e_TEMP . $localfile);
 		}
 
-
 		$result = e107::getFile()->getRemoteFile($remotefile, $localfile);
 
 		if ($result === false)
@@ -365,7 +408,7 @@ class github_sync_ui extends e_admin_ui
 
 		$zipBase = str_replace('.zip', '', $localfile); // eg. e107-master
 		$excludes[] = $zipBase;
-
+ 
 		if ($this->sync_type == 'core')
 		{
 			$newFolders = array(
@@ -383,6 +426,33 @@ class github_sync_ui extends e_admin_ui
 				$zipBase . '/'                => $destination_path
 			);
 		}
+
+		if ($this->sync_type == 'themepack')
+		{
+			$newFolders = array(
+				$zipBase . '/e107_plugins/'   => $destination_path . e107::getFolder('PLUGINS'),
+				$zipBase . '/e107_themes/'    => $destination_path . e107::getFolder('THEMES'),
+				$zipBase . '/'                => $destination_path
+			);
+		}
+
+		if ($this->sync_type == 'pluginspack')
+		{
+			$newFolders = array(
+				$zipBase . '/e107_plugins/'   => $destination_path . e107::getFolder('PLUGINS'),
+				$zipBase . '/'                => $destination_path
+			);
+		}
+
+		if ($this->sync_type == 'languagepack')
+		{
+			$newFolders = array(
+				$zipBase . '/e107_languages/' => $destination_path . e107::getFolder('LANGUAGES'),
+				$zipBase . '/e107_plugins/'   => $destination_path . e107::getFolder('PLUGINS'),
+				$zipBase . '/e107_themes/'    => $destination_path . e107::getFolder('THEMES'),
+				$zipBase . '/'                => $destination_path
+			);
+		}		
 
 		$srch = array_keys($newFolders);
 		$repl = array_values($newFolders);
@@ -417,11 +487,11 @@ class github_sync_ui extends e_admin_ui
 			@mkdir(dirname($newPath), 0755, true);
 			if (!rename($oldPath, $newPath))
 			{
-				$error[] = $newPath;
+				$error[] = $oldPath . " - " . $newPath;
 			}
 			else
 			{
-				$success[] = $newPath;
+				$success[] = $oldPath . " - ". $newPath;
 			}
 		}
 
