@@ -4,8 +4,7 @@ e107 plugin for extending core functionality
 
 WARNING: because this is plugin mainly for personal use, install.xml contains repos I am actually working on. 
 After installation you should clean it and backup your own xml file to import it with Data/Tools/Import if you need your own set somewhere else.
-
-Importing this file by default is set by core:  see #4745
+ 
 
 
 ## version 2.2
