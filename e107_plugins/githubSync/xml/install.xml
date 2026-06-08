@@ -1,0 +1,73 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<e107Export version="2.3.4 (lite)" timestamp="1771232859" >
+	<database>
+	<dbTable name="github_sync">
+		<item>
+			<field name="id">2</field>
+			<field name="type">core</field>
+			<field name="organization">e107sk</field>
+			<field name="repo">e107sk</field>
+			<field name="branch">master</field>
+			<field name="folder"></field>
+			<field name="lastsynced">1771229912</field>
+			<field name="note"></field>
+			<field name="public_repo">1</field>
+		</item>
+		<item>
+			<field name="id">3</field>
+			<field name="type">plugin</field>
+			<field name="organization">Jimako-e107-plugins</field>
+			<field name="repo">forum</field>
+			<field name="branch">main</field>
+			<field name="folder"></field>
+			<field name="lastsynced">0</field>
+			<field name="note"></field>
+			<field name="public_repo">1</field>
+		</item>
+		<item>
+			<field name="id">4</field>
+			<field name="type">plugin</field>
+			<field name="organization">Jimako-e107-plugins</field>
+			<field name="repo">download</field>
+			<field name="branch">main</field>
+			<field name="folder"></field>
+			<field name="lastsynced">0</field>
+			<field name="note"></field>
+			<field name="public_repo">1</field>
+		</item>
+		<item>
+			<field name="id">8</field>
+			<field name="type">language</field>
+			<field name="organization">e107translations</field>
+			<field name="repo">Slovak</field>
+			<field name="branch">master</field>
+			<field name="folder">0</field>
+			<field name="lastsynced">1771189363</field>
+			<field name="note"></field>
+			<field name="public_repo">1</field>
+		</item>
+		<item>
+			<field name="id">9</field>
+			<field name="type">language</field>
+			<field name="organization">e107translations</field>
+			<field name="repo">Czech</field>
+			<field name="branch">master</field>
+			<field name="folder">0</field>
+			<field name="lastsynced">0</field>
+			<field name="note"></field>
+			<field name="public_repo">1</field>
+		</item>
+		<item>
+			<field name="id">10</field>
+			<field name="type">core</field>
+			<field name="organization">e107sk</field>
+			<field name="repo">e107</field>
+			<field name="branch">main</field>
+			<field name="folder"></field>
+			<field name="lastsynced">1771229941</field>
+			<field name="note"></field>
+			<field name="public_repo">0</field>
+		</item>
+	</dbTable>
+	</database>
+</e107Export>
