@@ -29,7 +29,7 @@ if (!defined('e107_INIT'))
 class github_sync_engine
 {
 	/** Supported sync types. */
-	const SUPPORTED_TYPES = array('core', 'plugin', 'theme', 'themepack', 'pluginspack', 'language');
+	const SUPPORTED_TYPES = array('core', 'plugin', 'theme', 'themepack', 'language', 'other');
 
 	/** Files at the repo root that should never be copied into the e107 tree. */
 	private $excludeFiles = array(
@@ -105,7 +105,8 @@ class github_sync_engine
 			return false;
 		}
 
-		$result = $this->relocate($unarc, $folderMap, $zipBase, $p['type']);
+		$keepPrefix = $this->buildKeepPrefix($p, $zipBase);
+		$result     = $this->relocate($unarc, $folderMap, $zipBase, $p['type'], $keepPrefix);
 
 		$this->cleanup($localfile, $zipBase);
 
@@ -362,11 +363,18 @@ class github_sync_engine
 		switch ($p['type'])
 		{
 			case 'plugin':
+				// Folder-scoped single plugin. Extract ONLY e107_plugins/{folder}/
+				// from the repo zip into eplugins/{folder}/. The folder stays in the
+				// path after str_replace, so it is NOT appended to the destination.
+				// relocate() additionally skips anything outside keepPrefix (see
+				// buildKeepPrefix()). Identical layout to the marketplace reference.
 				return array(
-					$zipBase => e_BASE . e107::getFolder('PLUGINS') . $p['folder'],
+					$zipBase . '/e107_plugins/' => e_BASE . e107::getFolder('PLUGINS'),
 				);
 
 			case 'theme':
+				// TODO: align with 'plugin' (folder-scoped e107_themes/{folder}/) when
+				// theme sync is tackled. Left as the legacy root-layout map for now.
 				return array(
 					$zipBase => e_BASE . e107::getFolder('THEMES') . $p['folder'],
 				);
@@ -394,10 +402,15 @@ class github_sync_engine
 					$zipBase . '/'          => e_BASE,
 				);
 
-			case 'pluginspack':
+			case 'other':
+				// Root-layout grab for ad-hoc / manually-synced repos that do NOT
+				// follow the e107_plugins/{folder}/ standard: the whole repo root
+				// goes into one named plugin folder (eplugins/{folder}). No
+				// e107_plugins/ remap and no pack-style catch-all into e_BASE, so it
+				// cannot overwrite core directories. hasTraversal() still guards
+				// every entry in relocate().
 				return array(
-					$zipBase . '/e107_plugins/' => e_BASE . e107::getFolder('PLUGINS'),
-					$zipBase . '/'              => e_BASE,
+					$zipBase => e_BASE . e107::getFolder('PLUGINS') . $p['folder'],
 				);
 
 			case 'language':
@@ -413,18 +426,41 @@ class github_sync_engine
 	}
 
 	/**
+	 * Positive extraction prefix for strict folder-scoped types. When non-empty,
+	 * relocate() extracts ONLY archive entries beginning with this prefix and
+	 * skips everything else (matches the marketplace reference). Empty string
+	 * means "no scoping" (the map's own prefixes + catch-all decide placement).
+	 *
+	 * @param array  $p
+	 * @param string $zipBase
+	 * @return string
+	 */
+	private function buildKeepPrefix(array $p, $zipBase)
+	{
+		if ($p['type'] === 'plugin')
+		{
+			return $zipBase . '/e107_plugins/' . $p['folder'] . '/';
+		}
+
+		// 'theme' will join here once it becomes folder-scoped (see buildFolderMap).
+		return '';
+	}
+
+	/**
 	 * Move extracted entries from e_TEMP into their destinations.
 	 * Uses copy+unlink (the tested Lite pattern) and rejects any archive entry
 	 * containing a '..' path segment (zip-slip defence). For 'language',
-	 * skips translations for plugins/themes not present on this site.
+	 * skips translations for plugins/themes not present on this site. For strict
+	 * folder-scoped types a $keepPrefix skips everything outside the folder.
 	 *
 	 * @param array  $unarc
 	 * @param array  $folderMap
 	 * @param string $zipBase
 	 * @param string $type
+	 * @param string $keepPrefix
 	 * @return array ['success' => [...], 'error' => [...], 'skipped' => [...]]
 	 */
-	private function relocate(array $unarc, array $folderMap, $zipBase, $type)
+	private function relocate(array $unarc, array $folderMap, $zipBase, $type, $keepPrefix = '')
 	{
 		$excludes = array();
 		foreach ($this->excludeFiles as $f)
@@ -442,6 +478,13 @@ class github_sync_engine
 		foreach ($unarc as $v)
 		{
 			$stored = $v['stored_filename'];
+
+			// Folder-scoped extract: skip anything outside the requested folder.
+			if ($keepPrefix !== '' && strpos($stored, $keepPrefix) !== 0)
+			{
+				$skipped[] = $stored;
+				continue;
+			}
 
 			if ($this->matchFound($stored, $this->excludeMatch) || in_array($stored, $excludes, true))
 			{

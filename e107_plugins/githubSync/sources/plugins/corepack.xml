@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="utf-8"?>
+<e107Release>
+
+  <plugin
+    organization="e107Inc"
+    repo="e107"
+    folder="_blank"
+    branch="master"
+    name="Blank Plugin"
+    compatibility="2.3.6"
+    infourl="https://github.com/e107Inc/e107"
+  >
+    <description>A Blank Plugin to help you get started in plugin development. More details can be added here.</description>
+  </plugin>
+
+  <plugin
+    organization="e107Inc"
+    repo="e107"
+    folder="alt_auth"
+    branch="master"
+    name="Alternate Authentication"
+    compatibility="2.3.6"
+    infourl="https://github.com/e107Inc/e107"
+  >
+    <description>This plugin allows for alternate authentication methods.</description>
+  </plugin>
+
+  <plugin
+    organization="e107Inc"
+    repo="e107"
+    folder="banner"
+    branch="master"
+    name="Banners"
+    compatibility="2.3.6"
+    infourl="https://github.com/e107Inc/e107"
+  >
+    <description>Add advertising banners to your e107 website</description>
+  </plugin>
+
+  <plugin
+    organization="e107Inc"
+    repo="e107"
+    folder="chatbox_menu"
+    branch="master"
+    name="Chatbox"
+    compatibility="2.3.6"
+    infourl="https://github.com/e107Inc/e107"
+  >
+    <description>Chatbox Menu</description>
+  </plugin>
+
+  <plugin
+    organization="e107Inc"
+    repo="e107"
+    folder="contact"
+    branch="master"
+    name="Contact"
+    compatibility="2.3.6"
+    infourl="https://github.com/e107Inc/e107"
+  >
+    <description>A contact form for your e107 website.</description>
+  </plugin>
+
+  <plugin
+    organization="e107Inc"
+    repo="e107"
+    folder="download"
+    branch="master"
+    name="Downloads"
+    compatibility="2.3.6"
+    infourl="https://github.com/e107Inc/e107"
+  >
+    <description>This plugin is a fully featured file download system</description>
+  </plugin>
+
+  <plugin
+    organization="e107Inc"
+    repo="e107"
+    folder="faqs"
+    branch="master"
+    name="FAQs"
+    compatibility="2.3.6"
+    infourl="https://github.com/e107Inc/e107"
+  >
+    <description>A simple plugin to add Frequently Asked Questions to your website.</description>
+  </plugin>
+
+  <plugin
+    organization="e107Inc"
+    repo="e107"
+    folder="featurebox"
+    branch="master"
+    name="Featurebox"
+    compatibility="2.3.6"
+    infourl="https://github.com/e107Inc/e107"
+  >
+    <description>Displays an animated area on the top of your page with news-items and other content you would like to feature.</description>
+  </plugin>
+
+  <plugin
+    organization="e107Inc"
+    repo="e107"
+    folder="forum"
+    branch="master"
+    name="Forum"
+    compatibility="2.3.6"
+    infourl="https://github.com/e107Inc/e107"
+  >
+    <description>This plugin is a fully featured forum system</description>
+  </plugin>
+
+  <plugin
+    organization="e107Inc"
+    repo="e107"
+    folder="gallery"
+    branch="master"
+    name="Gallery"
+    compatibility="2.3.6"
+    infourl="https://github.com/e107Inc/e107"
+  >
+    <description>A simple image gallery</description>
+  </plugin>
+
+  <plugin
+    organization="e107Inc"
+    repo="e107"
+    folder="gsitemap"
+    branch="master"
+    name="Google Sitemap"
+    compatibility="2.3.6"
+    infourl="https://github.com/e107Inc/e107"
+  >
+    <description>Generates a Google Sitemap</description>
+  </plugin>
+
+  <plugin
+    organization="e107Inc"
+    repo="e107"
+    folder="hero"
+    branch="master"
+    name="Hero"
+    compatibility="2.3.6"
+    infourl="https://github.com/e107Inc/e107"
+  >
+    <description>Image and text slider, animated bullet points for the hero area of your home page.</description>
+  </plugin>
+
+  <plugin
+    organization="e107Inc"
+    repo="e107"
+    folder="import"
+    branch="master"
+    name="Import into e107"
+    compatibility="2.3.6"
+    infourl="https://github.com/e107Inc/e107"
+  >
+    <description>Import data from Wordpress, Joomla, Drupal, Blogpost, RSS and other formats.</description>
+  </plugin>
+
+  <plugin
+    organization="e107Inc"
+    repo="e107"
+    folder="linkwords"
+    branch="master"
+    name="Linkwords"
+    compatibility="2.3.6"
+    infourl="https://github.com/e107Inc/e107"
+  >
+    <description>This plugin will link specified words with a defined link and/or tooltip.</description>
+  </plugin>
+
+  <plugin
+    organization="e107Inc"
+    repo="e107"
+    folder="list_new"
+    branch="master"
+    name="List Latest"
+    compatibility="2.3.6"
+    infourl="https://github.com/e107Inc/e107"
+  >
+    <description>This plugin allows you to view a list and/or menu of recent additions in all e107 categories. You can either view the list with data since your last visit, or view a general latest additions list.</description>
+  </plugin>
+
+  <plugin
+    organization="e107Inc"
+    repo="e107"
+    folder="navigation"
+    branch="master"
+    name="Navigation"
+    compatibility="2.3.6"
+    infourl="https://github.com/e107Inc/e107"
+  >
+    <description>Sitelinks-based navigation menus for your e107 website.</description>
+  </plugin>
+
+  <plugin
+    organization="e107Inc"
+    repo="e107"
+    folder="news"
+    branch="master"
+    name="News"
+    compatibility="2.3.6"
+    infourl="https://github.com/e107Inc/e107"
+  >
+    <description>The e107 news content system.</description>
+  </plugin>
+
+  <plugin
+    organization="e107Inc"
+    repo="e107"
+    folder="newsfeed"
+    branch="master"
+    name="Newsfeeds"
+    compatibility="2.3.6"
+    infourl="https://github.com/e107Inc/e107"
+  >
+    <description>This plugin will retrieve rss feeds from other websites and display them according to your preferences.</description>
+  </plugin>
+
+  <plugin
+    organization="e107Inc"
+    repo="e107"
+    folder="newsletter"
+    branch="master"
+    name="Newsletter"
+    compatibility="2.3.6"
+    infourl="https://github.com/e107Inc/e107"
+  >
+    <description>Provides a quick and easy way to configure and send newsletters.</description>
+  </plugin>
+
+  <plugin
+    organization="e107Inc"
+    repo="e107"
+    folder="page"
+    branch="master"
+    name="Pages"
+    compatibility="2.3.6"
+    infourl="https://github.com/e107Inc/e107"
+  >
+    <description>Create and manage custom pages and page menus.</description>
+  </plugin>
+
+  <plugin
+    organization="e107Inc"
+    repo="e107"
+    folder="pm"
+    branch="master"
+    name="Private Messenger"
+    compatibility="2.3.6"
+    infourl="https://github.com/e107Inc/e107"
+  >
+    <description>This plugin is a fully featured Private Messaging system.</description>
+  </plugin>
+
+  <plugin
+    organization="e107Inc"
+    repo="e107"
+    folder="poll"
+    branch="master"
+    name="Poll"
+    compatibility="2.3.6"
+    infourl="https://github.com/e107Inc/e107"
+  >
+    <description>The poll plugin allows you to define polls in either a menu or forum post.</description>
+  </plugin>
+
+  <plugin
+    organization="e107Inc"
+    repo="e107"
+    folder="rss_menu"
+    branch="master"
+    name="RSS"
+    compatibility="2.3.6"
+    infourl="https://github.com/e107Inc/e107"
+  >
+    <description>RSS Feeds from your site.</description>
+  </plugin>
+
+  <plugin
+    organization="e107Inc"
+    repo="e107"
+    folder="signin"
+    branch="master"
+    name="Signin"
+    compatibility="2.3.6"
+    infourl="https://github.com/e107Inc/e107"
+  >
+    <description>A sign-in / login menu for your e107 website.</description>
+  </plugin>
+
+  <plugin
+    organization="e107Inc"
+    repo="e107"
+    folder="siteinfo"
+    branch="master"
+    name="Siteinfo"
+    compatibility="2.3.6"
+    infourl="https://github.com/e107Inc/e107"
+  >
+    <description>Displays site information and statistics in a menu.</description>
+  </plugin>
+
+  <plugin
+    organization="e107Inc"
+    repo="e107"
+    folder="social"
+    branch="master"
+    name="Social"
+    compatibility="2.3.6"
+    infourl="https://github.com/e107Inc/e107"
+  >
+    <description>Adds options to replace the e107 comment engine with Facebook. Add Twitter feeds to your site. etc.</description>
+  </plugin>
+
+  <plugin
+    organization="e107Inc"
+    repo="e107"
+    folder="tagcloud"
+    branch="master"
+    name="Tag Cloud"
+    compatibility="2.3.6"
+    infourl="https://github.com/e107Inc/e107"
+  >
+    <description>Add a Tag Cloud to your site.</description>
+  </plugin>
+
+  <plugin
+    organization="e107Inc"
+    repo="e107"
+    folder="tinymce4"
+    branch="master"
+    name="TinyMce4"
+    compatibility="2.3.6"
+    infourl="https://github.com/e107Inc/e107"
+  >
+    <description>TinyMce4 CDN version</description>
+  </plugin>
+
+  <plugin
+    organization="e107Inc"
+    repo="e107"
+    folder="user"
+    branch="master"
+    name="User"
+    compatibility="2.3.6"
+    infourl="https://github.com/e107Inc/e107"
+  >
+    <description>Theme and Language Menus</description>
+  </plugin>
+
+</e107Release>

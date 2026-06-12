@@ -8,9 +8,12 @@ define("ADMIN_GITSYNC_ICON", e107::getParser()->toGlyph('fa-file-text-o', array(
 class githubSync_adminArea extends e_admin_dispatcher
 {
 
+	protected $defaultMode   = 'main';
+	protected $defaultAction = 'prefs';
+
 	protected $modes = array(
 
-		'main'	=> array(
+		'manual'	=> array(
 			'controller' 	=> 'github_sync_ui',
 			'path' 			=> null,
 			'ui' 			=> 'github_sync_form_ui',
@@ -23,7 +26,50 @@ class githubSync_adminArea extends e_admin_dispatcher
 		'addlang' => array(
 			'controller'	=> 'github_addlang_ui',
 			'path'			=> null,
-			'ui'			=> null,
+			'ui'			=> 'github_addlang_form_ui',
+			'uipath'		=> null
+		),
+
+		// Find Plugin source list (catalog XMLs). Controller defined in
+		// admin/admin_sources.php; dispatched there via its 'url' menu item.
+		'sources' => array(
+			'controller'	=> 'github_sources_ui',
+			'path'			=> null,
+			'ui'			=> 'github_sources_form_ui',
+			'uipath'		=> null
+		),
+
+		// Find Theme source list — same shared UI (github_sources_handler.php) with
+		// marketType 'theme'. Controller defined in admin/admin_themesources.php.
+		'themesources' => array(
+			'controller'	=> 'github_themesources_ui',
+			'path'			=> null,
+			'ui'			=> 'github_sources_form_ui',
+			'uipath'		=> null
+		),
+
+		'online' => array(
+			'controller'	=> 'github_online_ui',
+			'path'			=> null,
+			'ui'			=> 'github_online_form_ui',
+			'uipath'		=> null
+		),
+
+		// Find Themes — same shared UI (github_online_handler.php) with
+		// marketType 'theme'. Controller defined in admin/admin_findthemes.php.
+		'onlinethemes' => array(
+			'controller'	=> 'github_onlinethemes_ui',
+			'path'			=> null,
+			'ui'			=> 'github_onlinethemes_form_ui',
+			'uipath'		=> null
+		),
+
+		// Plugin preferences (placeholder for now). Controller defined in
+		// admin/admin_config.php.
+		'main' => array(
+			'controller'	=> 'github_settings_ui',
+			'path'			=> null,
+			'ui'			=> 'github_settings_form_ui',
 			'uipath'		=> null
 		),
 
@@ -32,15 +78,31 @@ class githubSync_adminArea extends e_admin_dispatcher
 
 	protected $adminMenu = array(
 
-		'main/list'			=> array(
-			'caption'	=> LAN_MANAGE,
+		// Find Plugins — same caption/icon as core Lite (EPL_ADLAN_220 / fas-search).
+		'online/list'		=> array(
+			'caption'	=> 'Find Plugins',
 			'perm'		=> 'P',
-			'url'		=> '{e_PLUGIN}githubSync/admin/admin_config.php',
+			'icon'		=> 'fas-search',
+			'url'		=> '{e_PLUGIN}githubSync/admin/admin_findplugins.php',
 		),
-		'main/create'		=> array(
-			'caption'	=> LAN_CREATE,
+
+		// Find Themes — same UI, empty until a themepack.xml source exists.
+		'onlinethemes/list'	=> array(
+			'caption'	=> 'Find Themes',
 			'perm'		=> 'P',
-			'url'		=> '{e_PLUGIN}githubSync/admin/admin_config.php',
+			'icon'		=> 'fas-search',
+			'url'		=> '{e_PLUGIN}githubSync/admin/admin_findthemes.php',
+		),
+
+		'manual/list'			=> array(
+			'caption'	=> 'Manual Sync',
+			'perm'		=> 'P',
+			'url'		=> '{e_PLUGIN}githubSync/admin/admin_manual.php',
+		),
+		'manual/create'		=> array(
+			'caption'	=> 'Add Manual Sync',
+			'perm'		=> 'P',
+			'url'		=> '{e_PLUGIN}githubSync/admin/admin_manual.php',
 		),
 
 		// Own file via 'url' -> admin/admin_addlang.php. The type is fixed to
@@ -51,10 +113,28 @@ class githubSync_adminArea extends e_admin_dispatcher
 			'url'		=> '{e_PLUGIN}githubSync/admin/admin_addlang.php',
 		),
 
+		'sources/prefs'		=> array(
+			'caption'	=> 'Find Plugins Sources',
+			'perm'		=> 'P',
+			'url'		=> '{e_PLUGIN}githubSync/admin/admin_sources.php',
+		),
+		'themesources/prefs'	=> array(
+			'caption'	=> 'Find Theme Sources',
+			'perm'		=> 'P',
+			'url'		=> '{e_PLUGIN}githubSync/admin/admin_themesources.php',
+		),
+
+		// General plugin preferences — last.
+		'main/prefs'		=> array(
+			'caption'	=> 'Preferences',
+			'perm'		=> 'P',
+			'url'		=> '{e_PLUGIN}githubSync/admin/admin_config.php',
+		),
+
 	);
 
 	protected $adminMenuAliases = array(
-		'main/edit'	=> 'main/list'
+		'manual/edit'	=> 'manual/list'
 	);
 
 	protected $menuTitle = 'Github Sync';

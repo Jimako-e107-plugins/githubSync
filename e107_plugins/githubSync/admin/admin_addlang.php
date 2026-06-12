@@ -17,8 +17,11 @@ e107_require_once('admin_menu.php');                               // shared dis
 e107_require_once(e_PLUGIN . 'githubSync/github_sync_engine.php'); // for isValidSegment()
 
 
-class github_addlang_ui extends e_admin_controller
+class github_addlang_ui extends e_admin_ui
 {
+	protected $pluginName    = 'githubSync';
+	protected $table         = 'github_sync'; // satisfies model init; this mode uses a custom page
+	protected $pid           = 'id';
 	protected $defaultAction = 'main';
 
 	public function mainPage()
@@ -42,8 +45,6 @@ class github_addlang_ui extends e_admin_controller
 		$text .= "<table class='table adminform'>";
 		$text .= "<tr><td style='width:25%'>GitHub repository URL</td><td>";
 		$text .= $frm->text('repo_url', $value, 255, array('size' => 'xxlarge'));
-		$text .= "<div class='field-help'>Public GitHub repo "
-			. "Type is set to <strong>language</strong>, branch <strong>master</strong>.</div>";
 		$text .= "</td></tr>";
 		$text .= "</table>";
 		$text .= "<div class='buttons-bar center'>"
@@ -53,6 +54,24 @@ class github_addlang_ui extends e_admin_controller
 
 		// Messages first (added by processAdd), then the form.
 		return $mes->render() . $text;
+	}
+
+	/**
+	 * Help panel (shown automatically by the e_admin_ui chrome).
+	 *
+	 * @return array
+	 */
+	public function renderHelp()
+	{
+		$text  = 'Register a language repository by pasting its GitHub URL.';
+		$text .= '<br><br>The type is set to <strong>language</strong> and the branch to '
+			. '<strong>master</strong> automatically, so only the repository URL is needed.';
+		$text .= '<br><br>The repository must be public.';
+
+		return array(
+			'caption' => LAN_HELP,
+			'text'    => $text,
+		);
 	}
 
 	/**
@@ -183,6 +202,11 @@ class github_addlang_ui extends e_admin_controller
 
 		return array($organization, $repository);
 	}
+}
+
+
+class github_addlang_form_ui extends e_admin_form_ui
+{
 }
 
 
