@@ -82,6 +82,16 @@ class github_marketplace
 
 			$parsed = $this->parseRegistry($data, $type);
 
+		// Build exclusion lookup for this source: 'org/repo/folder' => true.
+			$excluded = array();
+			if (!empty($src['excluded']) && is_array($src['excluded']))
+			{
+				foreach ($src['excluded'] as $key)
+				{
+					$excluded[(string) $key] = true;
+				}
+			}
+ 
 			foreach ($parsed['data'] as $row)
 			{
 				$folder = isset($row['folder']) ? $row['folder'] : '';
@@ -89,6 +99,19 @@ class github_marketplace
 				{
 					continue; // first source wins on folder collisions
 				}
+ 
+				// Per-source exclusion check — key is 'org/repo/folder'.
+				if (!empty($excluded))
+				{
+					$org    = isset($row['params']['organization']) ? $row['params']['organization'] : '';
+					$repo   = isset($row['params']['repo'])         ? $row['params']['repo']         : '';
+					$exKey  = $org . '/' . $repo . '/' . $folder;
+					if (isset($excluded[$exKey]))
+					{
+						continue; // excluded for this source
+					}
+				}
+ 
 				$seen[$folder]      = true;
 				$result['data'][$i] = $row;
 				$i++;

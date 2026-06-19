@@ -17,7 +17,11 @@
  * only the enabled rows via getEnabled($type).
  *
  * Stored shape (per pref key):
- *   [ ['label'=>string, 'url'=>string, 'enabled'=>1|0, 'builtin'=>1|0, 'type'=>?], ... ]
+ *   [ ['label'=>string, 'url'=>string, 'enabled'=>1|0, 'builtin'=>1|0, 'type'=>?,
+ *      'excluded'=>array('org/repo/folder', ...)], ... ]
+ *
+ * The 'excluded' array is per-source: a plugin excluded in source A still appears
+ * from source B if it is not excluded there. Absent 'excluded' key = none excluded.
  *
  * @package githubSync
  */
@@ -60,6 +64,9 @@ class github_sync_sources
 	 * (enabled remote URLs + enabled builtin folder catalogs) for the type.
 	 * Folder catalogs are NOT auto-loaded; they must be imported (Refresh/Save in
 	 * the Sources screen) and enabled first.
+	 *
+	 * Each returned row includes the 'excluded' array (may be empty) so that
+	 * github_marketplace::getRegistryList() can filter per-source exclusions.
 	 *
 	 * @param string $type 'plugin' | 'theme'
 	 * @return array

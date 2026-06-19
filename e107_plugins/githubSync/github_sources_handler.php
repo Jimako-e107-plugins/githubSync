@@ -19,6 +19,11 @@
  *               location read-only; only the Enabled toggle is editable),
  *   * remote  — https catalog URLs the admin adds by hand.
  *
+ * Each source row may carry an 'excluded' array of 'org/repo/folder' keys
+ * identifying plugins that should be hidden in Find Plugins for that source.
+ * The plugin list per source is rendered inline (XML loaded on demand) with
+ * checkboxes; checked = excluded. reconcile() preserves this array on Save/Refresh.
+ *
  * Read side (github_marketplace): github_sync_sources::getEnabled($type).
  *
  * @package githubSync
@@ -114,6 +119,10 @@ class github_sources_ui extends e_admin_ui
 	 * Build the stored list = builtin rows (from the trusted folder scan for this
 	 * market type) + validated remote rows.
 	 *
+	 * Preserves the 'excluded' array per source row keyed by URL, so it survives
+	 * both Save and Refresh (builtin rows are rebuilt from the scan, which loses
+	 * unknown keys — we carry excluded across explicitly).
+	 *
 	 * @param array $stored current pref value
 	 * @param array $posted posted rows (or empty, e.g. on Refresh)
 	 * @return array
@@ -123,13 +132,19 @@ class github_sources_ui extends e_admin_ui
 		$stored = is_array($stored) ? $stored : array();
 		$posted = is_array($posted) ? $posted : array();
 
-		// Enabled state keyed by URL — prefer posted, fall back to stored.
-		$enabledByUrl = array();
+		// Enabled state and excluded list keyed by URL — prefer posted, fall back to stored.
+		$enabledByUrl  = array();
+		$excludedByUrl = array();
+
 		foreach ($stored as $row)
 		{
 			if (!empty($row['url']))
 			{
-				$enabledByUrl[$row['url']] = !empty($row['enabled']) ? 1 : 0;
+				$url                  = $row['url'];
+				$enabledByUrl[$url]   = !empty($row['enabled']) ? 1 : 0;
+				$excludedByUrl[$url]  = isset($row['excluded']) && is_array($row['excluded'])
+					? $row['excluded']
+					: array();
 			}
 		}
 
@@ -142,9 +157,15 @@ class github_sources_ui extends e_admin_ui
 				continue; // empty / removed row
 			}
 
+			// Excluded checkboxes posted as array of 'org/repo/folder' strings.
+			$postedExcluded = isset($row['excluded']) && is_array($row['excluded'])
+				? array_values(array_filter(array_map('strval', $row['excluded'])))
+				: array();
+
 			if (!empty($row['builtin']))
 			{
-				$enabledByUrl[$url] = !empty($row['enabled']) ? 1 : 0;
+				$enabledByUrl[$url]  = !empty($row['enabled']) ? 1 : 0;
+				$excludedByUrl[$url] = $postedExcluded;
 				continue; // location rebuilt from scan below
 			}
 
@@ -157,10 +178,11 @@ class github_sources_ui extends e_admin_ui
 
 			$label    = trim($row['label'] ?? '');
 			$remote[] = array(
-				'label'   => ($label !== '') ? $label : $url,
-				'url'     => $url,
-				'enabled' => !empty($row['enabled']) ? 1 : 0,
-				'builtin' => 0,
+				'label'    => ($label !== '') ? $label : $url,
+				'url'      => $url,
+				'enabled'  => !empty($row['enabled']) ? 1 : 0,
+				'builtin'  => 0,
+				'excluded' => $postedExcluded,
 			);
 		}
 
@@ -170,11 +192,12 @@ class github_sources_ui extends e_admin_ui
 		{
 			$url       = $f['url'];
 			$builtin[] = array(
-				'label'   => $f['label'],
-				'url'     => $url,
-				'type'    => $f['type'],
-				'enabled' => isset($enabledByUrl[$url]) ? $enabledByUrl[$url] : 0,
-				'builtin' => 1,
+				'label'    => $f['label'],
+				'url'      => $url,
+				'type'     => $f['type'],
+				'enabled'  => isset($enabledByUrl[$url]) ? $enabledByUrl[$url] : 0,
+				'builtin'  => 1,
+				'excluded' => isset($excludedByUrl[$url]) ? $excludedByUrl[$url] : array(),
 			);
 		}
 
@@ -198,6 +221,8 @@ class github_sources_ui extends e_admin_ui
 			. 'empty row. For a catalog on GitHub, the file\'s normal page URL '
 			. '(<code>github.com/&hellip;/blob/&hellip;</code>) works — it is fetched as raw content.';
 		$text .= '<br><br>The list is stored in plugin preferences, so a sync never overwrites it.';
+		$text .= '<br><br><strong>Excluded plugins</strong>: expand a source row to see its plugin '
+			. 'list. Check any plugin to hide it in Find Plugins for that source only.';
 
 		return array(
 			'caption' => LAN_HELP,
@@ -256,6 +281,9 @@ class github_sources_form_ui extends e_admin_form_ui
 	 * Renders the editable source list. Field names use $prefKey so the posted
 	 * data lands under the right preference.
 	 *
+	 * Each source row is followed by its plugin checklist (always visible),
+	 * loaded from the catalog XML. Checked plugins are excluded from Find Plugins.
+	 *
 	 * @param mixed  $curVal  current pref value (array of rows)
 	 * @param string $mode    'read' | 'write'
 	 * @param string $prefKey 'find_sources' | 'find_theme_sources'
@@ -282,8 +310,10 @@ class github_sources_form_ui extends e_admin_form_ui
 		$i = 0;
 		foreach ($rows as $s)
 		{
-			$url     = $s['url'] ?? '';
-			$enabled = !empty($s['enabled']);
+			$url      = $s['url'] ?? '';
+			$enabled  = !empty($s['enabled']);
+			$excluded = isset($s['excluded']) && is_array($s['excluded']) ? $s['excluded'] : array();
+			$excLookup = array_flip($excluded); // fast isset() check
 
 			$text .= '<tr>';
 
@@ -305,6 +335,51 @@ class github_sources_form_ui extends e_admin_form_ui
 
 			$text .= '<td class="center">' . $this->checkbox("{$prefKey}[{$i}][enabled]", 1, $enabled) . '</td>';
 			$text .= '</tr>';
+
+			// Plugin list for this source — always visible.
+			if ($url !== '')
+			{
+				$plugins = $this->loadSourcePlugins($url);
+
+				if (!empty($plugins))
+				{
+					$text .= '<tr>';
+					$text .= '<td colspan="4" style="padding:8px 16px">';
+					$text .= '<div class="row">';
+
+					$col = 0;
+					foreach ($plugins as $p)
+					{
+						$exKey   = $p['org'] . '/' . $p['repo'] . '/' . $p['folder'];
+						$checked = isset($excLookup[$exKey]);
+
+						if ($col % 3 === 0 && $col > 0)
+						{
+							$text .= '</div><div class="row" style="margin-top:4px">';
+						}
+
+						// Three columns: col-sm-4 each.
+						// The checkbox field name is an array — posted as
+						// find_sources[i][excluded][] = 'org/repo/folder'
+						$text .= '<div class="col-sm-4" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">';
+						$text .= '<label style="font-weight:normal;cursor:pointer" title="' . htmlspecialchars($exKey) . '">';
+						$text .= '<input type="checkbox"'
+							. ' name="' . htmlspecialchars("{$prefKey}[{$i}][excluded][]") . '"'
+							. ' value="' . htmlspecialchars($exKey) . '"'
+							. ($checked ? ' checked="checked"' : '')
+							. ' style="margin-right:4px">';
+						$text .= htmlspecialchars($p['name'] ?: $p['folder']);
+						$text .= '</label>';
+						$text .= '</div>';
+
+						$col++;
+					}
+
+					$text .= '</div>'; // .row
+					$text .= '</td></tr>';
+				}
+			}
+
 			$i++;
 		}
 
@@ -325,5 +400,108 @@ class github_sources_form_ui extends e_admin_form_ui
 			. '</div>';
 
 		return $text;
+	}
+
+	/**
+	 * Load the plugin/theme list from one catalog source.
+	 * Returns array of ['folder', 'org', 'repo', 'name'] per entry.
+	 * Returns empty array on failure (source unreachable, not yet enabled, etc.).
+	 *
+	 * This is called at render time, so results are NOT cached between page loads.
+	 * The catalog file is small (local XML) or remote (may be slow on first load);
+	 * caching can be added later if needed.
+	 *
+	 * @param string $url source URL or local path
+	 * @return array
+	 */
+	private function loadSourcePlugins($url)
+	{
+		if ($url === '')
+		{
+			return array();
+		}
+
+		e107_require_once(e_PLUGIN . 'githubSync/github_marketplace.php');
+
+		$mp  = new github_marketplace();
+		$xml = e107::getXml();
+
+		// Load the catalog — mirror the logic in github_marketplace::loadCatalog()
+		// but without fetching remote plugin.xml per entry (we only need folder/org/repo/name).
+		if (preg_match('#^https?://#i', $url))
+		{
+			// Normalize GitHub blob URL to raw.
+			if (preg_match('#^https?://(?:www\.)?github\.com/([^/]+)/([^/]+)/blob/(.+)$#i', $url, $m))
+			{
+				$url = 'https://raw.githubusercontent.com/' . $m[1] . '/' . $m[2] . '/' . $m[3];
+			}
+			$url  = preg_replace('/\?raw=(?:1|true)$/i', '', $url);
+			$raw  = $xml->getRemoteFile($url);
+			if (empty($raw))
+			{
+				return array();
+			}
+			$data = $xml->parseXml($raw, false);
+		}
+		else
+		{
+			$path = e107::getParser()->replaceConstants($url);
+			if (!is_readable($path))
+			{
+				return array();
+			}
+			$data = $xml->loadXMLfile($path, 'advanced');
+		}
+
+		if (empty($data) || !is_array($data))
+		{
+			return array();
+		}
+
+		// Detect type from data keys.
+		$type  = isset($data['plugin']) ? 'plugin' : (isset($data['theme']) ? 'theme' : '');
+		if ($type === '')
+		{
+			return array();
+		}
+
+		$nodes = $data[$type];
+
+		// Single entry — xmlClass returns assoc instead of array of assoc.
+		if (isset($nodes['@attributes']))
+		{
+			$nodes = array($nodes);
+		}
+
+		$plugins = array();
+		foreach ((array) $nodes as $node)
+		{
+			$attr   = isset($node['@attributes']) ? $node['@attributes'] : array();
+			$folder = isset($attr['folder'])       ? trim($attr['folder'])       : '';
+			$org    = isset($attr['organization']) ? trim($attr['organization']) : '';
+			$repo   = isset($attr['repo'])         ? trim($attr['repo'])         : '';
+			$name   = isset($attr['name'])         ? trim($attr['name'])         : '';
+
+			if ($folder === '' || $org === '' || $repo === '')
+			{
+				continue;
+			}
+
+			$plugins[] = array(
+				'folder' => $folder,
+				'org'    => $org,
+				'repo'   => $repo,
+				'name'   => $name,
+			);
+		}
+
+		// Sort by name / folder for consistent display.
+		usort($plugins, function($a, $b) {
+			$an = $a['name'] ?: $a['folder'];
+			$bn = $b['name'] ?: $b['folder'];
+			return strcasecmp($an, $bn);
+		});
+
+		return $plugins;
 	}
 }

@@ -22,4 +22,32 @@
   >
     <description>A plugin that generates user avatar that has your initials</description>
   </plugin>
+  <plugin
+    organization="Jimako-e107-plugins"
+    repo="e107-jplayer-plugin"
+    folder="jplayer"
+    branch="main"
+    name="Wolf jPlayer"
+    compatibility="2.3"
+    infourl="https://github.com/Jimako-e107-plugins/e107-jplayer-plugin"
+  >
+    <description>e107 version of a WordPress Wolf plugin based on the jPlayer jQuery.</description>
+  </plugin>
+  <plugin
+    organization="Jimako-e107-plugins"
+    repo="e107-pm-plugin"
+    folder="pm"
+    branch="main"
+    name="Private Messaging system"
+    compatibility="2.3"
+    infourl="https://github.com/Jimako-e107-plugins/e107-pm-plugin"
+  >
+    <description>IN CHECK PROCESS. This plugin is a fully featured Private Messaging system.</description>
+  </plugin>
+
 </e107Release>
+
+
+
+
+ 

@@ -328,6 +328,11 @@ class github_online_ui extends e_admin_ui
 			if ($doInstall && $this->marketType === 'plugin')
 			{
 				$text = e107::getPlugin()->install($params['folder']);
+				// Strip the core "Configure" control (it is a <button>, not an <a>) —
+				// it would open inside this modal iframe. Configuration is done the
+				// standard way from the plugin's own admin; the modal only offers Close.
+				$text = preg_replace('#<(a|button)\b[^>]*>.*?</\1>#is', '', $text);
+				$text = preg_replace('#<input\b[^>]*>#i', '', $text);
 				$mes->addInfo($text);
 
 				// Show upgrade button if local version is behind plugin.xml version.
@@ -344,6 +349,14 @@ class github_online_ui extends e_admin_ui
 			}
 
 			echo $mes->render('default', 'success');
+
+			// This handler runs inside the install modal's iframe. A Close button is
+			// simpler than auto-closing: reloading the parent both dismisses the modal
+			// and refreshes the Find Plugins list, so the row flips to "Installed".
+			echo "<div class='buttons-bar center' style='margin-top:15px'>"
+				. "<a href='#' class='btn btn-primary' onclick='if(window.parent&&window.parent!==window){window.parent.location.reload();}return false;'>"
+				. defset('LAN_CLOSE', 'Close')
+				. "</a></div>";
 		}
 		else
 		{
