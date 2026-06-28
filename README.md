@@ -6,9 +6,14 @@ WARNING: because this is plugin mainly for personal use, install.xml contains re
 After installation you should clean it and backup your own xml file to import it with Data/Tools/Import if you need your own set somewhere else.
 
 
+## version 2.3.2
+
+- cleaning a files reorganization
+
 ## version 2.3.1
 
 - option to exclude plugins from local sources
+- plugin DB upgrade moved to plugin (in testing)
 
 ## version 2.3
 

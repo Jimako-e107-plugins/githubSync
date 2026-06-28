@@ -58,7 +58,7 @@ class github_marketplace
 			return $this->emptyResult($type);
 		}
 
-		e107_require_once(e_PLUGIN . 'githubSync/github_sync_sources.php');
+		e107_require_once(e_PLUGIN . 'githubSync/includes/github_sync_sources.php');
 		$sources = github_sync_sources::getEnabled($type);
 
 		$result = $this->emptyResult($type);

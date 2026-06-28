@@ -14,7 +14,7 @@ if (!getperms('P'))
 }
 
 e107_require_once('admin_menu.php');                               // shared dispatcher
-e107_require_once(e_PLUGIN . 'githubSync/github_sync_engine.php'); // for isValidSegment()
+e107_require_once(e_PLUGIN . 'githubSync/includes/github_sync_engine.php'); // for isValidSegment()
 
 
 class github_addlang_ui extends e_admin_ui

@@ -17,7 +17,7 @@ if (!getperms('P'))
 e107::coreLan('db', true);
 
 e107_require_once('admin_menu.php');                                  // dispatcher: githubSync_adminArea
-e107_require_once(e_PLUGIN . 'githubSync/github_sync_engine.php');    // sync engine handler
+e107_require_once(e_PLUGIN . 'githubSync/includes/github_sync_engine.php');    // sync engine handler
 
 
 class github_sync_ui extends e_admin_ui

@@ -6,7 +6,7 @@
     repo="chatbox"
     folder="chatbox"
     branch="main"
-    name="Chatbox Menu"
+    name="Chatbox Plugin"
     compatibility="2.3"
     infourl="https://github.com/Jimako-e107-plugins/chatbox"
   >
@@ -33,16 +33,5 @@
     infourl="https://github.com/Jimako-e107-plugins/githubSync"
   >
   <description>GithubSync plugin</description>
-  </plugin>
-    <plugin
-    organization="Jimako-e107-plugins"
-    repo="e107-ulflags-plugin"
-    folder="ulflags"
-    branch="main"
-    name="User Languages Flags"
-    compatibility="2.3"
-    infourl="https://github.com/Jimako-e107-plugins/ulflags"
-  >
-    <description>This menu selection allows users to choose the language translation./description</description>
   </plugin>
 </e107Release>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<e107Release>
+  <plugin
+    organization="Jimako-alt_auth-plugins"
+    repo="alt_auth"
+    folder="alt_auth"
+    branch="main"
+    name="Alternative authentification plugin"
+    compatibility="2.3"
+    infourl="https://github.com/Jimako-e107-plugins/alt_auth"
+  >
+    <description>A chatbox menu plugin for e107</description>
+  </plugin>
+  <plugin
+    organization="Jimako-newsfeed-plugins"
+    repo="newsfeed"
+    folder="newsfeed"
+    branch="main"
+    name="Newsfeed plugin"
+    compatibility="2.3"
+    infourl="https://github.com/Jimako-e107-plugins/newsfeed"
+  >
+    <description>A chatbox menu plugin for e107</description>
+  </plugin>
+   
+</e107Release>

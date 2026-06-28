@@ -39,8 +39,8 @@ class githubSync_adminArea extends e_admin_dispatcher
 			'uipath'		=> null
 		),
 
-		// Find Theme source list — same shared UI (github_sources_handler.php) with
-		// marketType 'theme'. Controller defined in admin/admin_themesources.php.
+		// Find Theme source list — marketType 'theme'. Controller + form UI defined
+		// inline in admin/admin_themesources.php.
 		'themesources' => array(
 			'controller'	=> 'github_themesources_ui',
 			'path'			=> null,
@@ -55,8 +55,8 @@ class githubSync_adminArea extends e_admin_dispatcher
 			'uipath'		=> null
 		),
 
-		// Find Themes — same shared UI (github_online_handler.php) with
-		// marketType 'theme'. Controller defined in admin/admin_findthemes.php.
+		// Find Themes — marketType 'theme'. Controller + form UI defined inline in
+		// admin/admin_findthemes.php.
 		'onlinethemes' => array(
 			'controller'	=> 'github_onlinethemes_ui',
 			'path'			=> null,
