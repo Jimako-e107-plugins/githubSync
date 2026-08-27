@@ -234,12 +234,15 @@ class github_onlinethemes_ui extends e_admin_ui
 	private function sourcesHint()
 	{
 		$isTheme = ($this->marketType === 'theme');
-		$screen  = $isTheme ? 'Find Theme Sources'     : 'Find Plugins Sources';
-		$file    = $isTheme ? 'admin_themesources.php' : 'admin_sources.php';
-		$mode    = $isTheme ? 'themesources'           : 'sources';
-		$kind    = $isTheme ? 'themes'                 : 'plugins';
+		$screen  = $isTheme ? 'Find Theme Sources' : 'Find Plugins Sources';
+		$kind    = $isTheme ? 'themes'             : 'plugins';
 
-		$url = e_PLUGIN_ABS . 'githubSync/admin/' . $file . '?mode=' . $mode . '&amp;action=prefs';
+		// Theme sources still live in githubSync; plugin sources moved to findPlugins.
+		$base = $isTheme
+			? 'githubSync/admin/admin_themesources.php?mode=themesources'
+			: 'findPlugins/admin/admin_config.php?mode=main';
+
+		$url = e_PLUGIN_ABS . $base . '&amp;action=prefs';
 
 		return 'This list is built only from catalog <strong>sources</strong> that are '
 			. '<strong>enabled</strong> for ' . $kind . '. An empty list usually means no source has '

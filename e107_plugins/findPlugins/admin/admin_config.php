@@ -1,14 +1,24 @@
 <?php
 
-// e107 Plugin Admin Area — githubSync (mode: sources) — "Find Plugin Sources".
+// e107 Plugin Admin Area — findPlugins (mode: main) — "Find Plugins Sources".
 // Self-contained entry script: the sources UI classes (github_sources_ui /
 // github_sources_form_ui) live inline below. Manages the 'find_sources'
-// preference (plugin catalogs: sources/plugins/*.xml + remote URLs).
+// preference (plugin catalogs: findPlugins/sources/plugins/*.xml + remote URLs).
+// Depends on githubSync for the shared includes (engine/marketplace/sources).
 
 require_once('../../../class2.php');
 if (!getperms('P'))
 {
 	e107::redirect('admin');
+	exit;
+}
+
+// findPlugins relies on githubSync for its shared includes; bail out cleanly
+// if the dependency is not installed.
+if (!e107::isInstalled('githubSync'))
+{
+	e107::getMessage()->addError('githubSync plugin is required.');
+	e107::redirect(e_ADMIN . 'admin.php');
 	exit;
 }
 
@@ -18,8 +28,8 @@ e107_require_once(e_PLUGIN . 'githubSync/includes/github_sync_sources.php');  //
 
 class github_sources_ui extends e_admin_ui
 {
-	protected $pluginTitle = 'Github Sync';
-	protected $pluginName  = 'githubSync';
+	protected $pluginTitle = 'Find Plugins';
+	protected $pluginName  = 'findPlugins';
 	protected $table       = ''; // prefs only — no table
 	protected $pid         = '';
 
@@ -465,7 +475,7 @@ class github_sources_form_ui extends e_admin_form_ui
 	}
 }
 
-new githubSync_adminArea();
+new findPlugins_adminArea();
 
 require_once(e_ADMIN . 'auth.php');
 e107::getAdminUI()->runPage();

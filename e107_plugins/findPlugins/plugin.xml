@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<e107Plugin name="findPlugins" lan="findPlugins" version="1.0.0" date="2026-06-28" compatibility="2.3" installationrequired="false" >
+	<author name="Jimako" url="https://www.e107sk.com/" />
+	<summary lan="">Find Plugins and catalog sources, split out from Github Sync</summary>
+	<description lan="">Provides the Find Plugins browser and its catalog sources. Requires the githubSync plugin for its shared sync engine and marketplace includes.</description>
+	<keywords>
+		<word>admin</word>
+		<word>tools</word>
+		<word>plugins</word>
+	</keywords>
+	<category>tools</category>
+	<copyright>e107sk.com</copyright>
+	<dependencies>
+		<depends plugin="githubSync" />
+	</dependencies>
+	<adminLinks>
+		<link url="admin/admin_config.php" description="" primary="true" icon='images/plugin_64.png' iconSmall='images/plugin_32.png' >LAN_CONFIGURE</link>
+	</adminLinks>
+</e107Plugin>

@@ -30,28 +30,12 @@ class githubSync_adminArea extends e_admin_dispatcher
 			'uipath'		=> null
 		),
 
-		// Find Plugin source list (catalog XMLs). Controller defined in
-		// admin/admin_sources.php; dispatched there via its 'url' menu item.
-		'sources' => array(
-			'controller'	=> 'github_sources_ui',
-			'path'			=> null,
-			'ui'			=> 'github_sources_form_ui',
-			'uipath'		=> null
-		),
-
 		// Find Theme source list — marketType 'theme'. Controller + form UI defined
 		// inline in admin/admin_themesources.php.
 		'themesources' => array(
 			'controller'	=> 'github_themesources_ui',
 			'path'			=> null,
 			'ui'			=> 'github_sources_form_ui',
-			'uipath'		=> null
-		),
-
-		'online' => array(
-			'controller'	=> 'github_online_ui',
-			'path'			=> null,
-			'ui'			=> 'github_online_form_ui',
 			'uipath'		=> null
 		),
 
@@ -77,14 +61,6 @@ class githubSync_adminArea extends e_admin_dispatcher
 
 
 	protected $adminMenu = array(
-
-		// Find Plugins — same caption/icon as core Lite (EPL_ADLAN_220 / fas-search).
-		'online/list'		=> array(
-			'caption'	=> 'Find Plugins',
-			'perm'		=> 'P',
-			'icon'		=> 'fas-search',
-			'url'		=> '{e_PLUGIN}githubSync/admin/admin_findplugins.php',
-		),
 
 		// Find Themes — same UI, empty until a themepack.xml source exists.
 		'onlinethemes/list'	=> array(
@@ -113,11 +89,6 @@ class githubSync_adminArea extends e_admin_dispatcher
 			'url'		=> '{e_PLUGIN}githubSync/admin/admin_addlang.php',
 		),
 
-		'sources/prefs'		=> array(
-			'caption'	=> 'Find Plugins Sources',
-			'perm'		=> 'P',
-			'url'		=> '{e_PLUGIN}githubSync/admin/admin_sources.php',
-		),
 		'themesources/prefs'	=> array(
 			'caption'	=> 'Find Theme Sources',
 			'perm'		=> 'P',
@@ -138,4 +109,19 @@ class githubSync_adminArea extends e_admin_dispatcher
 	);
 
 	protected $menuTitle = 'Github Sync';
+
+	public function init()
+	{
+		// Append cross-plugin navigation (the findPlugins links, when installed).
+		// Skipped silently if the shared helper or findPlugins is not present.
+		e107_require_once(e_PLUGIN . 'githubSync/includes/admin_links.php');
+
+		if (class_exists('githubSync_admin_links'))
+		{
+			$this->adminMenu = array_merge(
+				$this->adminMenu,
+				githubSync_admin_links::get(array('githubSync'))
+			);
+		}
+	}
 }

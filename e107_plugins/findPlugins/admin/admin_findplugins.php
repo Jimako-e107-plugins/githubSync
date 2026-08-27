@@ -1,16 +1,25 @@
 <?php
 
-// e107 Plugin Admin Area — githubSync (mode: online) — "Find Plugins".
+// e107 Plugin Admin Area — findPlugins (mode: online) — "Find Plugins".
 // Self-contained entry script: the online UI classes (github_online_ui /
-// github_online_form_ui) live inline below. Registry = the plugin's own
-// github_marketplace (multisource); download = the plugin's own
+// github_online_form_ui) live inline below. Registry = githubSync's
+// github_marketplace (multisource); download = githubSync's
 // github_sync_engine. No core e_marketplace / unzipGithubArchive dependency,
-// so it works on upstream too.
+// so it works on upstream too. Depends on githubSync for the shared includes.
 
 require_once('../../../class2.php');
 if (!getperms('P'))
 {
 	e107::redirect('admin');
+	exit;
+}
+
+// findPlugins relies on githubSync for its shared includes; bail out cleanly
+// if the dependency is not installed.
+if (!e107::isInstalled('githubSync'))
+{
+	e107::getMessage()->addError('githubSync plugin is required.');
+	e107::redirect(e_ADMIN . 'admin.php');
 	exit;
 }
 
@@ -237,12 +246,15 @@ class github_online_ui extends e_admin_ui
 	private function sourcesHint()
 	{
 		$isTheme = ($this->marketType === 'theme');
-		$screen  = $isTheme ? 'Find Theme Sources'     : 'Find Plugins Sources';
-		$file    = $isTheme ? 'admin_themesources.php' : 'admin_sources.php';
-		$mode    = $isTheme ? 'themesources'           : 'sources';
-		$kind    = $isTheme ? 'themes'                 : 'plugins';
+		$screen  = $isTheme ? 'Find Theme Sources' : 'Find Plugins Sources';
+		$kind    = $isTheme ? 'themes'             : 'plugins';
 
-		$url = e_PLUGIN_ABS . 'githubSync/admin/' . $file . '?mode=' . $mode . '&amp;action=prefs';
+		// Theme sources still live in githubSync; plugin sources moved to findPlugins.
+		$base = $isTheme
+			? 'githubSync/admin/admin_themesources.php?mode=themesources'
+			: 'findPlugins/admin/admin_config.php?mode=main';
+
+		$url = e_PLUGIN_ABS . $base . '&amp;action=prefs';
 
 		return 'This list is built only from catalog <strong>sources</strong> that are '
 			. '<strong>enabled</strong> for ' . $kind . '. An empty list usually means no source has '
@@ -847,7 +859,7 @@ class github_online_form_ui extends e_admin_form_ui
 	}
 }
 
-new githubSync_adminArea();
+new findPlugins_adminArea();
 
 require_once(e_ADMIN . 'auth.php');
 e107::getAdminUI()->runPage();

@@ -55,7 +55,8 @@ class github_sync_sources
 	 */
 	public static function getAll($type = 'plugin')
 	{
-		$sources = e107::getPlugConfig('githubSync')->get(self::prefKey($type), array());
+		$pluginName = ($type === 'theme') ? 'githubSync' : 'findPlugins';
+		$sources    = e107::getPlugPref($pluginName, self::prefKey($type), array());
 		return is_array($sources) ? array_values($sources) : array();
 	}
 
@@ -88,8 +89,8 @@ class github_sync_sources
 
 	/**
 	 * Raw scan of the bundled catalog files for one type:
-	 *   'plugin' -> {e_PLUGIN}githubSync/sources/plugins/*.xml
-	 *   'theme'  -> {e_PLUGIN}githubSync/sources/themes/*.xml
+	 *   'plugin' -> {e_PLUGIN}findPlugins/sources/plugins/*.xml
+	 *   'theme'  -> {e_PLUGIN}findPlugins/sources/themes/*.xml
 	 * Returns ['label','url','type'] per file. Used by the Sources admin screen to
 	 * import/refresh builtin rows. The scan path is fixed (no user input) and only
 	 * *.xml is read, so there is no traversal or upload surface here.
@@ -100,7 +101,7 @@ class github_sync_sources
 	public static function getFolderSources($type = 'plugin')
 	{
 		$sub = ($type === 'theme') ? 'themes' : 'plugins';
-		$dir = e_PLUGIN . 'githubSync/sources/' . $sub . '/';
+		$dir = e_PLUGIN . 'findPlugins/sources/' . $sub . '/';
 
 		if (!is_dir($dir))
 		{
