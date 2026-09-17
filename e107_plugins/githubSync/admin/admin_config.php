@@ -36,8 +36,8 @@ class github_settings_ui extends e_admin_ui
 	{
 		return array(
 			'caption' => LAN_HELP,
-			'text'    => 'General githubSync preferences. Find Plugins <em>sources</em> have '
-				. 'their own screen; this page is for plugin-wide settings (added later).',
+			'text'    => 'Plugin-wide settings for GitHub Sync. The sources themselves are managed on '
+				. 'the <strong>Manual Sync</strong> screen, one row per repository. Finding and installing plugins or themes from catalogs is a separate plugin, <em>githubFind</em>.',
 		);
 	}
 }

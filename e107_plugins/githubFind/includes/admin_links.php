@@ -1,13 +1,15 @@
 <?php
 
-// Shared cross-plugin admin navigation for the githubSync / githubFind pair.
+// githubFind's own copy of the cross-plugin admin navigation for the
+// githubSync / githubFind pair (class renamed so both plugins can be installed
+// and loaded at once without a "class already declared" fatal).
 // Each dispatcher merges the OTHER plugin's links into its own left admin menu
 // so the two screens feel like one tool, regardless of which one you entered
 // from. Links to plugins that are not installed are skipped silently.
 
 if (!defined('e107_INIT')) { exit; }
 
-class githubSync_admin_links
+class githubFind_admin_links
 {
 	/**
 	 * Build admin-menu entries (e_admin_dispatcher $adminMenu format) for the

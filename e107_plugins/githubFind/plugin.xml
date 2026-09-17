@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<e107Plugin name="GitHub Find" lan="GitHub Find" version="1.1.1" date="2026-09-08" compatibility="2.4" installRequired="true" >
+	<author name="Jimako" url="https://www.e107sk.com/" />
+	<summary lan="">Find and install plugins and themes from GitHub catalogs</summary>
+	<description lan="">Standalone Find Plugins and Find Themes browsers with configurable catalog sources (bundled XML files or remote URLs). Downloads and installs directly from GitHub using its own bundled sync engine.</description>
+	<keywords>
+		<word>admin</word>
+		<word>tools</word>
+		<word>plugins</word>
+	</keywords>
+	<category>tools</category>
+	<copyright>e107sk.com</copyright>
+	<adminLinks>
+		<link url="admin/admin_config.php" description="" primary="true" icon='images/plugin_64.png' iconSmall='images/plugin_32.png' >LAN_CONFIGURE</link>
+	</adminLinks>
+</e107Plugin>

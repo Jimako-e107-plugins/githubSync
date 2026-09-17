@@ -120,6 +120,11 @@ class github_addlang_ui extends e_admin_ui
 				'note'         => '',
 				'token'        => '',
 				'public_repo'  => 1,
+				// e107 language packs use the upstream layout (e107_languages/,
+				// e107_plugins/, e107_themes/) — set it explicitly so the row
+				// keeps syncing exactly as the previous hardcoded map did.
+				'folder_prefix'  => 'e107_',
+				'plugins_folder' => 'e107_plugins',
 			),
 			'_FIELD_TYPES' => array(
 				'type'         => 'todb',
@@ -131,6 +136,8 @@ class github_addlang_ui extends e_admin_ui
 				'token'        => 'todb',
 				'lastsynced'   => 'int',
 				'public_repo'  => 'int',
+				'folder_prefix'  => 'todb',
+				'plugins_folder' => 'todb',
 			),
 		));
 

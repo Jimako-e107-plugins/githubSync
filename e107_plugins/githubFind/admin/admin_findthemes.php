@@ -1,11 +1,12 @@
 <?php
 
-// e107 Plugin Admin Area — findPlugins (mode: online) — "Find Plugins".
-// Self-contained entry script: the online UI classes (github_online_ui /
-// github_online_form_ui) live inline below. Registry = githubSync's
-// github_marketplace (multisource); download = githubSync's
-// github_sync_engine. No core e_marketplace / unzipGithubArchive dependency,
-// so it works on upstream too. Depends on githubSync for the shared includes.
+// e107 Plugin Admin Area — githubFind (mode: onlinethemes) — "Find Themes".
+// Self-contained entry script: the online UI classes (github_onlinethemes_ui /
+// github_onlinethemes_form_ui) live inline below, with marketType 'theme'. With
+// no themepack.xml present the registry is empty, so this renders the same chrome
+// with an empty list. Theme install/activation is future. Registry = the plugin's
+// own github_marketplace; download = the plugin's own github_sync_engine — all
+// includes live in githubFind/includes/.
 
 require_once('../../../class2.php');
 if (!getperms('P'))
@@ -14,37 +15,26 @@ if (!getperms('P'))
 	exit;
 }
 
-// findPlugins relies on githubSync for its shared includes; bail out cleanly
-// if the dependency is not installed.
-if (!e107::isInstalled('githubSync'))
-{
-	e107::getMessage()->addError('githubSync plugin is required.');
-	e107::redirect(e_ADMIN . 'admin.php');
-	exit;
-}
-
 e107_require_once('admin_menu.php');     // shared dispatcher
 e107::coreLan('plugin', true);           // EPL_* + repurposed LAN_* constants used by the UI
-e107_require_once(e_PLUGIN . 'githubSync/includes/github_marketplace.php');   // bundled registry (multisource)
+e107_require_once(e_PLUGIN . 'githubFind/includes/github_marketplace.php');   // bundled registry (multisource)
 
-// Defined by core eadmin/plugin.php; this standalone script must provide it.
 if (!defined('PLUGIN_SCAN_INTERVAL'))
 {
 	define('PLUGIN_SCAN_INTERVAL', !empty($_SERVER['E_DEV']) ? 0 : 360);
 }
 
-// The download action opens in an e-modal iframe — render bare (no admin chrome).
 if (isset($_GET['action']) && $_GET['action'] === 'download' && !defined('e_IFRAME'))
 {
 	define('e_IFRAME', true);
 }
 
 
-class github_online_ui extends e_admin_ui
+class github_onlinethemes_ui extends e_admin_ui
 {
 	protected $pluginTitle   = ADLAN_98;
 	protected $pluginName    = 'core';
-	protected $marketType    = 'plugin'; // 'plugin' | 'theme' — set by the theme subclass
+	protected $marketType    = 'theme'; // 'plugin' | 'theme' — set by the theme subclass
 	protected $table         = false;
 	protected $pid           = 'plugin_id';
 	protected $perPage       = 10;
@@ -138,7 +128,7 @@ class github_online_ui extends e_admin_ui
 
 	public function init()
 	{
-		e107_require_once(e_PLUGIN . 'githubSync/includes/github_marketplace.php');
+		e107_require_once(e_PLUGIN . 'githubFind/includes/github_marketplace.php');
 
 		// Larger icons in the Find Plugins listing.
 		e107::css('inline', 'img.plugin-icon-lg{height:100px;width:auto;max-width:120px;vertical-align:middle}');
@@ -249,10 +239,10 @@ class github_online_ui extends e_admin_ui
 		$screen  = $isTheme ? 'Find Theme Sources' : 'Find Plugins Sources';
 		$kind    = $isTheme ? 'themes'             : 'plugins';
 
-		// Theme sources still live in githubSync; plugin sources moved to findPlugins.
+		// Theme and plugin sources both live in githubFind.
 		$base = $isTheme
-			? 'githubSync/admin/admin_themesources.php?mode=themesources'
-			: 'findPlugins/admin/admin_config.php?mode=main';
+			? 'githubFind/admin/admin_themesources.php?mode=themesources'
+			: 'githubFind/admin/admin_config.php?mode=main';
 
 		$url = e_PLUGIN_ABS . $base . '&amp;action=prefs';
 
@@ -324,7 +314,7 @@ class github_online_ui extends e_admin_ui
 		// (folder-scoped) correctly on BOTH Lite and upstream e107, whereas the
 		// upstream unzipGithubArchive does not folder-scope. Return shape matches
 		// (false on hard failure, else ['success'=>[], 'error'=>[], 'skipped'=>[]]).
-		e107_require_once(e_PLUGIN . 'githubSync/includes/github_sync_engine.php');
+		e107_require_once(e_PLUGIN . 'githubFind/includes/github_sync_engine.php');
 		$engine = new github_sync_engine();
 		$result = $engine->sync(array(
 			'organization' => $params['organization'],
@@ -334,6 +324,12 @@ class github_online_ui extends e_admin_ui
 			'type'         => $this->marketType, // 'plugin' | 'theme'
 			'public_repo'  => 1,                  // marketplace catalogs are public
 			'token'        => '',
+			// Source-repo layout, passed EXPLICITLY: the catalogs point at
+			// repositories in the upstream layout (e107_plugins/, e107_*), while
+			// the shared engine defaults to the Lite layout (eplugins/, e*).
+			// Both values are whitelisted again inside the engine.
+			'plugins_folder' => 'e107_plugins',
+			'folder_prefix'  => 'e107_',
 		));
 
 		if ($result === false)
@@ -461,7 +457,7 @@ class github_online_ui extends e_admin_ui
 	{
 		if (null === $this->mp)
 		{
-			e107_require_once(e_PLUGIN . 'githubSync/includes/github_marketplace.php');
+			e107_require_once(e_PLUGIN . 'githubFind/includes/github_marketplace.php');
 			$this->mp = new github_marketplace();
 		}
 
@@ -614,7 +610,7 @@ class github_online_ui extends e_admin_ui
 }
 
 
-class github_online_form_ui extends e_admin_form_ui
+class github_onlinethemes_form_ui extends e_admin_form_ui
 {
 	function plugin_name($curVal, $mode)
 	{
@@ -859,7 +855,7 @@ class github_online_form_ui extends e_admin_form_ui
 	}
 }
 
-new findPlugins_adminArea();
+new githubFind_adminArea();
 
 require_once(e_ADMIN . 'auth.php');
 e107::getAdminUI()->runPage();

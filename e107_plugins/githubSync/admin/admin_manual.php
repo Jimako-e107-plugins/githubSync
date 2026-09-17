@@ -1,11 +1,9 @@
 <?php
 
-// e107 Plugin Admin Area — githubSync (mode: manual) — "Manual Sync".
-// Thin entry script: shares the dispatcher from admin_menu.php, defines the
-// UI + form classes for mode 'manual' (the manual github_sync table + sync),
-// and delegates all sync work to the github_sync_engine handler. No sync logic
-// lives here. (Renamed from admin_config.php; that filename is now the
-// Preferences screen.)
+// Manual Sync (mode: manual): the github_sync table — one row per source
+// repository, each with its own type, layout and plugin selection. Thin entry
+// script; it shares the dispatcher from admin_menu.php and delegates the sync
+// itself to the bundled engine.
 
 require_once('../../../class2.php');
 if (!getperms('P'))
@@ -18,11 +16,12 @@ e107::coreLan('db', true);
 
 e107_require_once('admin_menu.php');                                  // dispatcher: githubSync_adminArea
 e107_require_once(e_PLUGIN . 'githubSync/includes/github_sync_engine.php');    // sync engine handler
+e107_require_once(e_PLUGIN . 'githubSync/includes/plugin_list.php');           // plugin-folder list + selection (per row)
 
 
 class github_sync_ui extends e_admin_ui
 {
-	protected $pluginTitle	= 'Github Sync';
+	protected $pluginTitle	= 'GitHub Sync';
 	protected $pluginName	= 'githubSync';
 	protected $table		= 'github_sync';
 	protected $pid			= 'id';
@@ -47,6 +46,28 @@ class github_sync_ui extends e_admin_ui
 		'repo'         => array('title' => 'Repo',  'type' => 'text',  'data' => 'safestr',  'width' => 'auto',  'filter' => 'value',  'help' => '',  'readParms' => array(),  'writeParms' => array(),  'class' => 'left',  'thclass' => 'left',),
 		'branch'       => array('title' => 'Branch',  'type' => 'text',  'data' => 'safestr',  'width' => 'auto',  'filter' => 'value',  'help' => '',  'readParms' => array(),  'writeParms' => array(),  'class' => 'left',  'thclass' => 'left',),
 		'folder'       => array('title' => 'Folder',  'type' => 'text',  'data' => 'safestr',  'width' => 'auto',  'filter' => 'value',  'help' => 'Folder name if different than repo name',  'readParms' => array(),  'writeParms' => array(),  'class' => 'left',  'thclass' => 'left',),
+		// Source-repo layout (per row). Whitelisted again in beforeCreate() /
+		// beforeUpdate() — the dropdown alone is no guarantee — and once more
+		// on read (rowLayout()) and inside the engine, because the values end
+		// up as archive path prefixes and in a GitHub API URL segment.
+		'folder_prefix' => array(
+			'title' => 'Repo folder prefix',  'type' => 'dropdown',  'data' => 'str',  'width' => 'auto',  'filter' => 'value',
+			'help'  => 'Prefix of the core directories in the SOURCE repo: <strong>e</strong> for the Lite layout (eadmin, ehandlers, …) '
+				. 'or <strong>e107_</strong> for the standard layout (e107_admin, e107_handlers, …). Used by core, themepack and language syncs. '
+				. 'Independent of the plugins folder setting.',
+			'readParms' => array(),
+			'writeParms' => array('optArray' => array('e' => 'e  (Lite: eadmin, ehandlers, …)', 'e107_' => 'e107_  (standard: e107_admin, …)')),
+			'class' => 'left',  'thclass' => 'left',
+		),
+		'plugins_folder' => array(
+			'title' => 'Repo plugins folder',  'type' => 'dropdown',  'data' => 'str',  'width' => 'auto',  'filter' => 'value',
+			'help'  => 'Name of the plugins directory in the SOURCE repo: <strong>e107_plugins</strong> (standard e107 layout) or '
+				. '<strong>eplugins</strong> (Lite layout). Used by plugin, core, themepack and language syncs, and by the plugin list of a core entry. '
+				. 'After changing it on a core entry, save and click <em>Refresh plugin list</em>.',
+			'readParms' => array(),
+			'writeParms' => array('optArray' => array('e107_plugins' => 'e107_plugins (standard)', 'eplugins' => 'eplugins (Lite)')),
+			'class' => 'left',  'thclass' => 'left',
+		),
 		'lastsynced'   => array('title' => 'Last Synced',  'type' => 'datestamp',  'writeParms' => 'type=datetime', 'readonly' => true, 'noedit' => true,  'data' => 'int',   'readParms' => array(),   'class' => 'left',  'thclass' => 'left',),
 		'note'         => array('title' => 'Note',  'type' => 'textarea',   'data' => 'str',   'readParms' => array(),   'class' => 'left',  'thclass' => 'left',),
 		'token' => [
@@ -69,10 +90,25 @@ class github_sync_ui extends e_admin_ui
 			'batch' => true,
 			'help'  => 'Check if this is a public repo (no token needed). Uncheck for private repos (token becomes required).',
 		],
+		// Plugin selection of a 'core' entry (stored in the plugin_list column
+		// as JSON — folder + list + selection). NOT a data field of the admin
+		// form ('data' => false): the column is read and written only by the
+		// plugin_list helper, which whitelists every name against the stored
+		// list. Rendered by github_sync_form_ui::plugin_list() on the edit
+		// screen; hidden on the list.
+		'plugin_list'  => array(
+			'title'  => 'Plugins (core sync)',
+			'type'   => 'method',
+			'data'   => false,
+			'nolist' => true,
+			'help'   => 'Only for type <strong>core</strong>: the plugin folders a core sync extracts from the repo archive. '
+				. 'Everything else under the repo\'s plugins folder is skipped; with nothing selected nothing is written there.',
+			'readParms' => array(),  'writeParms' => array(),
+		),
 		'options'      => array('title' => LAN_OPTIONS,  'type' => 'method',  'data' => null,  'width' => '10%',  'thclass' => 'center last',  'class' => 'center last',  'forced' => 'value',  'readParms' => array(),  'writeParms' => array(),),
 	);
 
-	protected $fieldpref = array('type', 'organization', 'repo', 'branch', 'folder', 'note', 'lastsynced');
+	protected $fieldpref = array('type', 'organization', 'repo', 'branch', 'folder', 'folder_prefix', 'plugins_folder', 'note', 'lastsynced');
 
 	protected $prefs = array();
 
@@ -105,32 +141,280 @@ class github_sync_ui extends e_admin_ui
 		);
 	}
 
+	/**
+	 * Whitelist the source-repo layout values. Anything outside the two known
+	 * layouts falls back to the migration defaults ('e' / 'e107_plugins').
+	 * Used on save (before the model's toDB pass) and on read.
+	 *
+	 * @param mixed $folderPrefix
+	 * @param mixed $pluginsFolder
+	 * @return array  array('folder_prefix' => string, 'plugins_folder' => string)
+	 */
+	public static function normalizeLayout($folderPrefix, $pluginsFolder)
+	{
+		$folderPrefix = (string) $folderPrefix;
+		if (!in_array($folderPrefix, array('e', 'e107_'), true))
+		{
+			$folderPrefix = 'e';
+		}
+
+		$pluginsFolder = (string) $pluginsFolder;
+		if (!in_array($pluginsFolder, array('eplugins', 'e107_plugins'), true))
+		{
+			$pluginsFolder = 'e107_plugins';
+		}
+
+		return array('folder_prefix' => $folderPrefix, 'plugins_folder' => $pluginsFolder);
+	}
+
+	/**
+	 * The layout of a stored row, whitelisted on read (the values come from
+	 * the table, which is not trusted more than the form).
+	 *
+	 * @param array $row  github_sync row
+	 * @return array  array('folder_prefix' => string, 'plugins_folder' => string)
+	 */
+	protected function rowLayout(array $row)
+	{
+		return self::normalizeLayout($row['folder_prefix'] ?? '', $row['plugins_folder'] ?? '');
+	}
+
+	/**
+	 * Load one github_sync row by id, or an empty array.
+	 *
+	 * @param int $id
+	 * @return array
+	 */
+	protected function loadRow($id)
+	{
+		$id = (int) $id;
+		if ($id < 1)
+		{
+			return array();
+		}
+
+		$row = e107::getDb()->retrieve('github_sync', '*', 'WHERE id=' . $id);
+
+		return is_array($row) ? $row : array();
+	}
+
 	// ------- Customize Create --------
-	public function beforeCreate($new_data, $old_data) { return $new_data; }
+
+	/**
+	 * Whitelist the layout dropdowns before the core saves (and toDB()s) the row.
+	 */
+	public function beforeCreate($new_data, $old_data)
+	{
+		$layout = self::normalizeLayout($new_data['folder_prefix'] ?? '', $new_data['plugins_folder'] ?? '');
+		$new_data['folder_prefix']  = $layout['folder_prefix'];
+		$new_data['plugins_folder'] = $layout['plugins_folder'];
+
+		return $new_data;
+	}
 	public function afterCreate($new_data, $old_data, $id) {}
 	public function onCreateError($new_data, $old_data) {}
 
 	// ------- Customize Update --------
-	public function beforeUpdate($new_data, $old_data, $id) { return $new_data; }
+
+	/**
+	 * Whitelist the layout dropdowns, and — when the plugin selection was on
+	 * screen (core entry, main admin) — save the posted checkboxes with the
+	 * row, so "what you see is what gets saved" also for the main Save
+	 * button. The posted names are only ever matched against the STORED
+	 * list inside the helper; nothing from $_POST becomes a path segment.
+	 */
+	public function beforeUpdate($new_data, $old_data, $id)
+	{
+		$layout = self::normalizeLayout($new_data['folder_prefix'] ?? '', $new_data['plugins_folder'] ?? '');
+		$new_data['folder_prefix']  = $layout['folder_prefix'];
+		$new_data['plugins_folder'] = $layout['plugins_folder'];
+
+		$req  = $this->getRequest();
+		$type = (string) ($new_data['type'] ?? ($old_data['type'] ?? ''));
+
+		if ($req->getPosted('gs_plugins_form') && $type === 'core' && getperms('0'))
+		{
+			$this->saveSelection((int) $id, $layout['plugins_folder']);
+		}
+
+		return $new_data;
+	}
 	public function afterUpdate($new_data, $old_data, $id) {}
 	public function onUpdateError($new_data, $old_data, $id) {}
+
+	// ------- Plugin selection (core entries) --------
+
+	/**
+	 * Row id of the entry being edited (edit URL / posted id / model).
+	 *
+	 * @return int
+	 */
+	protected function editId()
+	{
+		$req = $this->getRequest();
+		$id  = (int) $req->getQuery('id', 0);
+		if ($id < 1)
+		{
+			$id = (int) $req->getPosted('id', 0);
+		}
+		if ($id < 1 && $this->getModel() !== null)
+		{
+			$id = (int) $this->getModel()->getId();
+		}
+
+		return $id;
+	}
+
+	/**
+	 * Common guard for the two selection triggers: main admin, valid form
+	 * token, existing row of type 'core'. Returns the row or an empty array
+	 * (reason already reported).
+	 *
+	 * @return array
+	 */
+	protected function selectionRow()
+	{
+		$mes = e107::getMessage();
+
+		if (!getperms('0'))
+		{
+			$mes->addError('Only the main admin can change the plugin selection.');
+			return array();
+		}
+
+		// CSRF: the admin edit form carries the e107 form token.
+		if (!e107::getSession()->checkFormToken($this->getRequest()->getPosted('e-token', '')))
+		{
+			$mes->addError('Invalid security token.');
+			return array();
+		}
+
+		$row = $this->loadRow($this->editId());
+		if (empty($row))
+		{
+			$mes->addError('Sync configuration not found. Save the entry first.');
+			return array();
+		}
+
+		if (($row['type'] ?? '') !== 'core')
+		{
+			$mes->addError('The plugin selection applies to entries of type "core" only.');
+			return array();
+		}
+
+		return $row;
+	}
+
+	/**
+	 * POST etrigger_refresh_plugins on the edit screen: one deliberate GitHub
+	 * API call for THIS row's repository, branch and plugins folder (the
+	 * STORED values — save layout changes first). No clearCache() beforehand:
+	 * refresh() merges the stored selection with the new list.
+	 *
+	 * @param mixed $value  posted trigger value (unused)
+	 * @return void
+	 */
+	public function editRefreshPluginsTrigger($value = null)
+	{
+		$row = $this->selectionRow();
+		if (empty($row))
+		{
+			return;
+		}
+
+		$layout = $this->rowLayout($row);
+
+		$list = githubSyncLite_plugin_list::refresh(array(
+			'id'             => (int) $row['id'],
+			'organization'   => $row['organization'],
+			'repo'           => $row['repo'],
+			'branch'         => $row['branch'],
+			'token'          => $row['token'] ?? '',
+			'public_repo'    => (int) ($row['public_repo'] ?? 1),
+			'plugins_folder' => $layout['plugins_folder'],
+		));
+
+		if ($list !== false)
+		{
+			e107::getMessage()->addSuccess(count($list) . ' plugin folder(s) found in the repo and stored with this entry. Your selection was kept.');
+		}
+	}
+
+	/**
+	 * POST etrigger_save_selection on the edit screen: store the posted
+	 * checkboxes as the row's selection (whitelisted against the stored list).
+	 *
+	 * @param mixed $value  posted trigger value (unused)
+	 * @return void
+	 */
+	public function editSaveSelectionTrigger($value = null)
+	{
+		$row = $this->selectionRow();
+		if (empty($row))
+		{
+			return;
+		}
+
+		$layout = $this->rowLayout($row);
+		$this->saveSelection((int) $row['id'], $layout['plugins_folder']);
+	}
+
+	/**
+	 * Save the posted gs_plugins[] checkboxes as the stored selection of one
+	 * row and report how many folders are selected. Only names present in
+	 * the stored list survive (whitelist); the base plugins are always added.
+	 * Does nothing (and says so) when no list is stored yet for this
+	 * plugins-folder setting.
+	 *
+	 * @param int    $id             github_sync row id
+	 * @param string $pluginsFolder  whitelisted plugins folder of the row
+	 * @return void
+	 */
+	protected function saveSelection($id, $pluginsFolder)
+	{
+		$mes = e107::getMessage();
+		$req = $this->getRequest();
+
+		if (githubSyncLite_plugin_list::getCached($id, $pluginsFolder) === null)
+		{
+			$mes->addInfo('No plugin list stored for this entry (or it was made for a different plugins folder) — nothing to select. Click <strong>Refresh plugin list</strong> first.');
+			return;
+		}
+
+		$posted = $req->getPosted('gs_plugins', array());
+		if (!is_array($posted))
+		{
+			$posted = array();
+		}
+
+		$selected = githubSyncLite_plugin_list::saveSelection($posted, $id, $pluginsFolder);
+
+		$mes->addSuccess(count($selected) . ' plugin folder(s) selected (including the base plugins) — saved with this entry.');
+	}
 
 	// left-panel help menu area (replaces e_help.php used in old plugins)
 	public function renderHelp()
 	{
 		$text  = 'Sync <strong>type</strong> — what gets extracted from the repo:';
 		$text .= '<ul>';
-		$text .= '<li><strong>core</strong> — full core sync from any repo with e107 in its root</li>';
-		$text .= '<li><strong>plugin</strong> — one plugin from e107_plugins/{folder}</li>';
+		$text .= '<li><strong>core</strong> — the repo\'s core directories, plus ONLY the '
+			. '<strong>selected plugin folders</strong> from the repo\'s plugins folder (nothing there with an empty selection)</li>';
+		$text .= '<li><strong>plugin</strong> — one plugin from {plugins folder}/{folder}</li>';
 		$text .= '<li><strong>theme</strong> — one theme (legacy root layout for now)</li>';
 		$text .= '<li><strong>themepack</strong> — theme + plugins (2 folders)</li>';
 		$text .= '<li><strong>language</strong> — language files (3 folders)</li>';
 		$text .= '<li><strong>other</strong> — repo root into one plugin folder (ad-hoc / manual)</li>';
 		$text .= '</ul>';
 		$text .= 'The <strong>Folder</strong> field defaults to the <em>repo name</em> when left '
-			. 'empty. For <em>plugin</em> it selects e107_plugins/{folder} inside the repo (and is '
+			. 'empty. For <em>plugin</em> it selects {plugins folder}/{folder} inside the repo (and is '
 			. 'the target folder); fill it only when that folder differs from the repo name.';
-		$text .= '<br><br>Tested on e107 2.3.4 Lite. Use at your own risk.';
+		$text .= '<br><br><strong>Repo folder prefix</strong> and <strong>Repo plugins folder</strong> describe '
+			. 'the SOURCE repo\'s layout per entry: <em>e</em> + <em>eplugins</em> for a Lite repo, '
+			. '<em>e107_</em> + <em>e107_plugins</em> for a standard e107 repo (the two are independent).';
+		$text .= '<br><br>For a <strong>core</strong> entry, edit it to manage its <strong>plugin selection</strong>: '
+			. '<em>Refresh plugin list</em> reads the repo\'s plugins folder once (one GitHub API call) and stores '
+			. 'the list with the entry; tick the folders you want and <em>Save selection</em>. Main admin only.';
+		$text .= '<br><br>Every sync overwrites files on disk. Back up first and try it on a test site. Use at your own risk.';
 
 		return array(
 			'caption' => LAN_HELP,
@@ -209,6 +493,34 @@ class github_sync_ui extends e_admin_ui
 			$mes->addWarning($note);
 		}
 
+		// Source-repo layout used for this entry (whitelisted on read), and the
+		// plugin selection of a core entry — so the admin sees what a run writes.
+		$layout      = $this->rowLayout($data);
+		$safePrefix  = htmlspecialchars($layout['folder_prefix'], ENT_QUOTES, 'utf-8');
+		$safePlugDir = htmlspecialchars($layout['plugins_folder'], ENT_QUOTES, 'utf-8');
+
+		$layoutNote = "Repo layout: core folders <strong>{$safePrefix}*</strong>, plugins in <strong>{$safePlugDir}/</strong>.";
+
+		if (($data['type'] ?? '') === 'core')
+		{
+			$selected = githubSyncLite_plugin_list::getSelected($id, $layout['plugins_folder']);
+			$editUrl  = e_SELF . '?mode=' . $this->getMode() . '&action=edit&id=' . $id;
+
+			if (empty($selected))
+			{
+				$layoutNote .= "<br>Plugin selection: <strong>none</strong> — nothing under {$safePlugDir}/ will be written. "
+					. "<a href='" . $editUrl . "'>Edit the entry</a> to select plugin folders.";
+			}
+			else
+			{
+				$safeNames = array_map(function ($name) { return htmlspecialchars($name, ENT_QUOTES, 'utf-8'); }, $selected);
+				$layoutNote .= "<br>Plugin selection (" . count($selected) . "): <strong>" . implode('</strong>, <strong>', $safeNames)
+					. "</strong> — only these folders are extracted from {$safePlugDir}/; the rest is skipped.";
+			}
+		}
+
+		$mes->addInfo($layoutNote);
+
 		$min_php_version = '7.4';
 		if (version_compare(PHP_VERSION, $min_php_version, '<'))
 		{
@@ -263,15 +575,27 @@ class github_sync_ui extends e_admin_ui
 			return $mes->render();
 		}
 
+		// Per-row source layout (whitelisted on read; the engine whitelists it
+		// again) and, for a core entry, the stored plugin selection — already
+		// a subset of the stored list; the engine re-validates every name
+		// before it becomes a path segment. Same call shape as githubSyncLite's
+		// Core Sync.
+		$layout  = $this->rowLayout($row);
+		$isCore  = ($row['type'] === 'core');
+		$plugins = $isCore ? githubSyncLite_plugin_list::getSelected($id, $layout['plugins_folder']) : array();
+
 		$engine = new github_sync_engine();
 		$result = $engine->sync(array(
-			'organization' => $row['organization'],
-			'repo'         => $row['repo'],
-			'branch'       => $row['branch'],
-			'folder'       => $row['folder'],
-			'type'         => $row['type'],
-			'token'        => $row['token'] ?? '',
-			'public_repo'  => $row['public_repo'] ?? 1,
+			'organization'   => $row['organization'],
+			'repo'           => $row['repo'],
+			'branch'         => $row['branch'],
+			'folder'         => $row['folder'],
+			'type'           => $row['type'],
+			'token'          => $row['token'] ?? '',
+			'public_repo'    => $row['public_repo'] ?? 1,
+			'plugins_folder' => $layout['plugins_folder'],
+			'folder_prefix'  => $layout['folder_prefix'],
+			'plugins'        => $plugins,
 		));
 
 		if ($result === false)
@@ -292,9 +616,40 @@ class github_sync_ui extends e_admin_ui
 		{
 			$mes->addSuccess(count($result['success']) . ' file(s)/folder(s) synced.');
 		}
+
+		$safePlugDir = htmlspecialchars($layout['plugins_folder'], ENT_QUOTES, 'utf-8');
+
+		if ($isCore)
+		{
+			if (empty($plugins))
+			{
+				$mes->addInfo('No plugin folders were included in this run (nothing selected) — nothing was written under ' . $safePlugDir . '/.');
+			}
+			else
+			{
+				$safeNames = array_map(function ($name) { return htmlspecialchars($name, ENT_QUOTES, 'utf-8'); }, $plugins);
+				$mes->addInfo(count($plugins) . ' plugin folder(s) included in this run from ' . $safePlugDir . '/: <strong>'
+					. implode('</strong>, <strong>', $safeNames) . '</strong>');
+			}
+		}
+
 		if (!empty($result['skipped']))
 		{
-			$mes->addInfo(count($result['skipped']) . ' item(s) skipped.');
+			if ($isCore)
+			{
+				// Count how many of the skipped archive entries sit under the
+				// repo's plugins folder ({zipBase}/{plugins_folder}/...), so the
+				// admin can see the unselected plugin folders were left alone.
+				$plugPattern  = '#^[^/]+/' . preg_quote($layout['plugins_folder'], '#') . '/#';
+				$skippedPlugs = count(preg_grep($plugPattern, $result['skipped']));
+
+				$mes->addInfo(count($result['skipped']) . ' item(s) skipped — ' . $skippedPlugs . ' of them under the repo\'s '
+					. $safePlugDir . '/ directory (plugin folders not in your selection), the rest repo housekeeping files.');
+			}
+			else
+			{
+				$mes->addInfo(count($result['skipped']) . ' item(s) skipped.');
+			}
 		}
 		if (!empty($result['error']))
 		{
@@ -343,6 +698,140 @@ class github_sync_ui extends e_admin_ui
 
 class github_sync_form_ui extends e_admin_form_ui
 {
+	/**
+	 * Custom render for the 'plugin_list' field. Edit screen of a 'core' entry
+	 * only: the row's stored plugin-folder list as checkboxes, checked from the
+	 * stored selection, plus the refresh action.
+	 *
+	 * @param mixed $curVal
+	 * @param string $mode
+	 * @return string|null
+	 */
+	public function plugin_list($curVal, $mode, $parms = array())
+	{
+		if ($mode !== 'write')
+		{
+			return '';
+		}
+
+		$controller = $this->getController();
+		$model      = $controller->getModel();
+		$id         = ($model !== null) ? (int) $model->getId() : 0;
+
+		if ($id < 1)
+		{
+			return "<div class='alert alert-info'>Save the entry first, then edit it to select the plugin folders a core sync should write.</div>";
+		}
+
+		$type = ($model !== null) ? (string) $model->get('type') : '';
+		if ($type !== 'core')
+		{
+			return "<div class='alert alert-info'>The plugin selection applies to entries of type <strong>core</strong> only.</div>";
+		}
+
+		if (!getperms('0'))
+		{
+			return "<div class='alert alert-info'>Only the main admin can change the plugin selection.</div>";
+		}
+
+		$layout      = github_sync_ui::normalizeLayout($model->get('folder_prefix'), $model->get('plugins_folder'));
+		$safePlugDir = htmlspecialchars($layout['plugins_folder'], ENT_QUOTES, 'utf-8');
+		$safeLocal   = htmlspecialchars(e107::getFolder('PLUGINS'), ENT_QUOTES, 'utf-8');
+
+		$refresh = $this->admin_button('etrigger_refresh_plugins', 1, 'other', 'Refresh plugin list');
+
+		$cached = githubSyncLite_plugin_list::getCached($id, $layout['plugins_folder']);
+
+		if ($cached === null)
+		{
+			$note  = "<div class='alert alert-info'>";
+			$note .= "No plugin list stored for this entry yet (or the stored list was made for a different "
+				. "plugins-folder setting). Click <strong>Refresh plugin list</strong> to read the repo's <strong>"
+				. $safePlugDir . "/</strong> folder once (uses the SAVED organization, repo, branch and plugins folder) "
+				. "and store it with this entry. Until then a core sync writes nothing under " . $safePlugDir . "/.";
+			$note .= "</div>";
+
+			return $note . "<div style='margin-bottom:10px'>" . $refresh . "</div>";
+		}
+
+		$base     = githubSyncLite_plugin_list::basePlugins();
+		$selected = $cached['selected'];
+
+		$rows = '';
+		foreach ($cached['list'] as $folder)
+		{
+			$isBase    = in_array($folder, $base, true);
+			$onDisk    = githubSyncLite_plugin_list::existsOnDisk($folder);
+			$installed = githubSyncLite_plugin_list::isInstalled($folder);
+			$checked   = in_array($folder, $selected, true);
+
+			// Base plugins get their own class so the check/uncheck-all
+			// buttons skip them — base is always handled manually.
+			$boxClass = $isBase ? 'gs-plugin-base' : 'gs-plugin-select';
+
+			$labelBits = array();
+			if ($isBase)
+			{
+				$labelBits[] = "<span class='label label-primary'>base</span>";
+			}
+			if ($installed)
+			{
+				$labelBits[] = "<span class='label label-success'>installed</span>";
+			}
+			elseif ($onDisk)
+			{
+				$labelBits[] = "<span class='label label-info'>on disk</span>";
+			}
+			else
+			{
+				$labelBits[] = "<span class='label label-default'>not present</span>";
+			}
+
+			$safeFolder = htmlspecialchars($folder, ENT_QUOTES, 'utf-8');
+
+			$rows .= "<tr>";
+			$rows .= "<td style='width:5%' class='center'>"
+				. $this->checkbox('gs_plugins[]', $safeFolder, $checked, array('class' => $boxClass))
+				. "</td>";
+			$rows .= "<td>{$safeFolder}</td>";
+			$rows .= "<td>" . implode(' ', $labelBits) . "</td>";
+			$rows .= "</tr>";
+		}
+
+		$legend  = "<table class='table table-striped'><tbody>";
+		$legend .= "<tr><td style='width:28%'><strong>Checked</strong></td>"
+			. "<td>the saved selection — the plugin folders a core sync extracts from the repo archive "
+			. "(" . count($selected) . " selected). Change it and click <strong>Save selection</strong> "
+			. "(the main <strong>Save</strong> button stores it too).</td></tr>";
+		$legend .= "<tr><td><span class='label label-primary'>base</span></td>"
+			. "<td>always selected; the check/uncheck-all buttons skip these</td></tr>";
+		$legend .= "<tr><td><span class='label label-success'>installed</span></td>"
+			. "<td>registered on this site (informational only)</td></tr>";
+		$legend .= "<tr><td><span class='label label-info'>on disk</span></td>"
+			. "<td>folder exists in " . $safeLocal . " but the plugin is not installed (informational only)</td></tr>";
+		$legend .= "<tr><td><span class='label label-default'>not present</span></td>"
+			. "<td>no local folder (informational only)</td></tr>";
+		$legend .= "<tr><td><strong>List source</strong></td>"
+			. "<td>the repo's <strong>" . $safePlugDir . "/</strong> folder, stored with this entry &middot; "
+			. "<em>Refresh plugin list</em> re-reads it and keeps your selection; folders that disappeared "
+			. "from the repo are dropped and reported</td></tr>";
+		$legend .= '</tbody></table>';
+
+		$toolbar  = "<script>function gsSetAll(state){var b=document.querySelectorAll('.gs-plugin-select');"
+			. "for(var i=0;i<b.length;i++){b[i].checked=state;}}</script>";
+		$toolbar .= $this->admin_button('etrigger_save_selection', 1, 'update', 'Save selection');
+		$toolbar .= ' ' . $refresh;
+		$toolbar .= " <button type='button' class='btn btn-default' onclick='gsSetAll(true)'>Check all</button>";
+		$toolbar .= " <button type='button' class='btn btn-default' onclick='gsSetAll(false)'>Uncheck all</button>";
+
+		$table  = "<table class='table table-striped'>";
+		$table .= "<thead><tr><th style='width:5%'></th><th>Plugin folder</th><th>Status</th></tr></thead>";
+		$table .= "<tbody>{$rows}</tbody>";
+		$table .= "</table>";
+
+		return $legend . "<div style='margin-bottom:10px'>" . $toolbar . "</div>" . $table . $this->hidden('gs_plugins_form', 1);
+	}
+
 	// Override the default Options column.
 	function options($parms, $value, $id, $attributes)
 	{

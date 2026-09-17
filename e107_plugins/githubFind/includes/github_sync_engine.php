@@ -13,7 +13,7 @@
  * One canonical version, copied verbatim into githubSync, githubSyncLite and
  * githubFind. Keep the copies diffable: change all three together.
  *
- * @package githubSync
+ * @package githubFind
  */
 
 if (!defined('e107_INIT'))

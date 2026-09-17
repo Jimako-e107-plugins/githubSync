@@ -9,5 +9,8 @@ CREATE TABLE `github_sync` (
 `note` text NOT NULL,
 `token` VARCHAR(255) NOT NULL DEFAULT '',
 `public_repo` tinyint(1) NOT NULL DEFAULT '1',
+`folder_prefix` varchar(10) NOT NULL DEFAULT 'e',
+`plugins_folder` varchar(20) NOT NULL DEFAULT 'e107_plugins',
+`plugin_list` text NOT NULL,
 UNIQUE KEY `id` (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;

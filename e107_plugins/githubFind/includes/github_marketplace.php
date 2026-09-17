@@ -1,20 +1,11 @@
 <?php
 
 /**
- * github_marketplace — the plugin's own copy of the Lite GitHub registry reader.
+ * github_marketplace — githubFind's own copy of the Lite GitHub registry
+ * reader: turns catalog XML files into the list the Find screens display,
+ * and resolves each entry's remote plugin.xml for version and icon.
  *
- * Bundled (not calling core e_marketplace) so Find Plugins works on UPSTREAM e107
- * too, where e_marketplace has no GitHub registry. This is the live Lite
- * e_marketplace class, renamed; the dead SOAP/XML-RPC adapters are NOT carried.
- *
- * The ONLY behavioural change vs. core is getRegistryList(): instead of one fixed
- * file (pluginpack.xml / themepack.xml) it reads ALL enabled catalogs from
- * github_sync_sources::getEnabled() (folder catalogs + remote URLs) and merges
- * them (de-dup by folder, first source wins). Everything downstream — parseRegistry,
- * fetchRemotePluginXml, validateRemote, isValidSegment, sanitizeRemoteUrl, etc. —
- * is unchanged. XML parsing uses e107 xmlClass (XXE-safe: no LIBXML_NOENT).
- *
- * @package githubSync
+ * @package githubFind
  */
 
 if (!defined('e107_INIT'))
@@ -58,7 +49,7 @@ class github_marketplace
 			return $this->emptyResult($type);
 		}
 
-		e107_require_once(e_PLUGIN . 'githubSync/includes/github_sync_sources.php');
+		e107_require_once(e_PLUGIN . 'githubFind/includes/github_sync_sources.php');
 		$sources = github_sync_sources::getEnabled($type);
 
 		$result = $this->emptyResult($type);

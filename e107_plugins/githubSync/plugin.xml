@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<e107Plugin name="Github Sync" lan="Github Sync" version="2.4.0" date="2026-06-28" compatibility="2.3" installRequired="true" >
+<e107Plugin name="GitHub Sync" lan="GitHub Sync" version="2.5.0" date="2026-09-08" compatibility="2.4" installRequired="true" >
 	<author name="Jimako" url="https://www.e107sk.com/" />
-	<summary lan="">This plugin extends core sync functionality</summary>
-	<description lan="">This plugin extends core sync functionality</description>
+	<summary lan="">Sync core, plugins, themes and language packs from GitHub repositories</summary>
+	<description lan="">Keeps a table of GitHub sources and syncs each of them into this installation: the core (plus a per-source selection of plugin folders), a single plugin or theme, a theme pack, or a language pack. Each source records the layout of the repository it points at, so Lite and standard e107 repositories can be mixed. Downloads and extracts with its own sync engine.</description>
 	<keywords>
 		<word>admin</word>
 		<word>tools</word>
