@@ -1,76 +1,19 @@
-# githubSync
+# GitHub Sync for e107
 
-e107 plugin for extending core functionality
+Three e107 plugins that bring code onto your site from GitHub: the core, individual plugins and themes, language packs, and a browsable catalog of plugins and themes you can install in one click.
 
-WARNING: because this is plugin mainly for personal use, install.xml contains repos I am actually working on. 
-After installation you should clean it and backup your own xml file to import it with Data/Tools/Import if you need your own set somewhere else.
+| Plugin | Folder | What it does |
+| --- | --- | --- |
+| **GitHub Sync** | `e107_plugins/githubSync` | A table of source repositories. Syncs core, plugins, themes, theme packs and language packs. |
+| **GitHub Sync Lite** | `e107_plugins/githubSyncLite` | One source, core only (plus selected plugin folders). No database table, with built-in diagnostics. |
+| **GitHub Find** | `e107_plugins/githubFind` | Find Plugins and Find Themes browsers, fed by catalog files. Downloads and installs. |
 
-## version 2.4
+Each plugin is standalone: install one, two or all three.
 
-- split funcionality to 2 plugins 
+**Documentation:** [playground.e107sk.com/github-sync](https://playground.e107sk.com/github-sync)
 
-## version 2.3.2
+Requires e107 2.4 and PHP 7.4 or newer.
 
-- cleaning a files reorganization
+## Licence
 
-## version 2.3.1
-
-- option to exclude plugins from local sources
-- plugin DB upgrade moved to plugin (in testing)
-
-## version 2.3
-
-- multi source of plugin lists
-- local source supported
-- Find plugins supported 
-
-
-## version 2.2
-
-- reorganize admin part 
-- extracted sync engine into a self-contained handler class
-- improved synchronization of language's repo
-- thined the controller and wired it to the engine
-- improved language sync (existing-only plugin's folders + rename type to language)
-- add/past Language Repo (quick-add from URL) functionality
-
-## version 2.1
-
-- Customized export batch option
-- view button
-
-## version 2.0
-
-Added support for private repos
-
-## version 1.2 
-
-Added support for:
-- theme pack (theme and plugins in related e107 folders)
-- plugins pack (more plugins in related e107 folder)
-- languages pack (plugins, themes and languages e107 folder)
-- added note 
-
-## version 1.1
-
-Added support for:
-- theme in repo
-- repo with different name than needed folder
-
-
-## It allows to sync to any repository 
-
-Supported:
-- core itself
-- plugins
-
-Planned:
-themes
-
-
-### Warning
-This plugin is used for custom development. Don't use it if you don't know what are you doing.  It can very easily break your site. 
-
-Its main reason is the minimalization of core file changes - to be able to sync with different than core repo that is under active development. 
-
-Next reason (not plannned at first) - way how to download needed plugins from admin area without FTP
+GPL. Use at your own risk — every sync overwrites files on disk.
